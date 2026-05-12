@@ -1,980 +1,576 @@
+
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
+
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sopemaster — Mapa de Asientos</title>
-  <link rel="stylesheet" href="comprar_boleto.css">
-  <style>
-    /* ── Todo lo de abajo extiende comprar_boleto.css sin tocarlo ── */
-
-    /* Sobreescribir el height fijo de .contenido para que crezca */
-    .contenido {
-      height: auto !important;
-      min-height: 400px;
-      overflow: hidden;
-      padding: 0;
-    }
-
-    /* ── PANEL INTERNO ─────────────────────────────── */
-    .mapa-wrap {
-      display: flex;
-      flex-direction: column;
-      height: 100%;
-    }
-
-    /* Cabecera del panel */
-    .mapa-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 18px 22px 14px;
-      border-bottom: 1px solid rgba(255,255,255,0.06);
-      flex-wrap: wrap;
-      gap: 10px;
-    }
-
-    .mapa-titulo {
-      font-size: 18px;
-      font-weight: bold;
-      color: #ff7a1a;
-      margin: 0;
-    }
-
-    .evento-selector {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
-
-    .evento-selector label {
-      font-size: 12px;
-      color: rgba(255,255,255,0.5);
-      font-weight: bold;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-    }
-
-    .select-evento {
-      background: #1a2530;
-      border: 1px solid rgba(255,255,255,0.12);
-      border-radius: 8px;
-      color: #fff;
-      padding: 7px 12px;
-      font-size: 13px;
-      outline: none;
-      cursor: pointer;
-      min-width: 200px;
-    }
-
-    .select-evento:focus { border-color: #ff7a1a; }
-
-    .btn-cargar {
-      background: #ed6a11;
-      color: #fff;
-      border: none;
-      border-radius: 8px;
-      padding: 8px 16px;
-      font-size: 13px;
-      font-weight: bold;
-      cursor: pointer;
-      transition: background .2s;
-    }
-
-    .btn-cargar:hover { background: #ff7a1a; }
-    .btn-cargar:disabled { background: #4b3010; color: #7a5520; cursor: not-allowed; }
-
-    /* ── CONTENIDO DEL MAPA ─────────────────────────── */
-    .mapa-body {
-      flex: 1;
-      display: flex;
-      gap: 0;
-      overflow: hidden;
-    }
-
-    /* Zona del mapa propiamente */
-    .mapa-zona {
-      flex: 1;
-      padding: 16px 18px;
-      overflow: auto;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-
-    /* Sidebar derecho con info */
-    .mapa-sidebar {
-      width: 210px;
-      background: rgba(0,0,0,0.25);
-      border-left: 1px solid rgba(255,255,255,0.06);
-      padding: 16px;
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
-    }
-
-    /* ── ESCENARIO ─────────────────────────────────── */
-    .escenario {
-      background: linear-gradient(135deg, #1a2530, #243040);
-      border: 2px solid #ff7a1a;
-      border-radius: 8px 8px 0 0;
-      text-align: center;
-      padding: 8px;
-      font-size: 11px;
-      font-weight: bold;
-      letter-spacing: 4px;
-      color: #ff7a1a;
-      text-transform: uppercase;
-      margin-bottom: 4px;
-    }
-
-    /* ── GRID DE ASIENTOS ────────────────────────────── */
-    .filas-contenedor {
-      overflow: auto;
-      max-height: 420px;
-    }
-
-    .fila-row {
-      display: flex;
-      align-items: center;
-      gap: 4px;
-      margin-bottom: 4px;
-    }
-
-    .fila-etiqueta {
-      width: 24px;
-      font-size: 10px;
-      font-weight: bold;
-      color: rgba(255,255,255,0.35);
-      text-align: right;
-      flex-shrink: 0;
-      font-family: monospace;
-    }
-
-    .asientos-fila {
-      display: flex;
-      gap: 4px;
-    }
-
-    /* ── ASIENTO ────────────────────────────────────── */
-    .asiento {
-      width: 26px;
-      height: 24px;
-      border-radius: 4px 4px 2px 2px;
-      border: 1px solid transparent;
-      font-size: 8px;
-      font-weight: bold;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      position: relative;
-      transition: transform .12s, box-shadow .12s;
-      flex-shrink: 0;
-    }
-
-    /* Respaldo del asiento */
-    .asiento::before {
-      content: '';
-      position: absolute;
-      bottom: -3px;
-      left: 3px;
-      right: 3px;
-      height: 3px;
-      border-radius: 0 0 3px 3px;
-    }
-
-    /* Libre */
-    .asiento.libre {
-      background: #1a3828;
-      border-color: #2dbd6e;
-      color: #2dbd6e;
-    }
-    .asiento.libre::before { background: #175c35; }
-    .asiento.libre:hover {
-      transform: translateY(-3px) scale(1.15);
-      box-shadow: 0 5px 14px rgba(45,189,110,0.4);
-      z-index: 5;
-    }
-
-    /* Vendido */
-    .asiento.vendido {
-      background: #3a1212;
-      border-color: #c02020;
-      color: #c02020;
-      cursor: not-allowed;
-      opacity: 0.65;
-    }
-    .asiento.vendido::before { background: #6a1010; }
-
-    /* Seleccionado */
-    .asiento.seleccionado {
-      background: #3a2300;
-      border-color: #ff7a1a;
-      color: #ff7a1a;
-      transform: translateY(-3px) scale(1.15);
-      box-shadow: 0 5px 16px rgba(255,122,26,0.45);
-      z-index: 5;
-    }
-    .asiento.seleccionado::before { background: #7a4800; }
-
-    /* ── SEPARADOR DE SECCIÓN ───────────────────────── */
-    .seccion-sep { height: 8px; }
-
-    .seccion-nombre-fila {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      margin: 4px 0 2px 28px;
-    }
-
-    .seccion-chip {
-      font-size: 9px;
-      font-weight: bold;
-      letter-spacing: 1.5px;
-      text-transform: uppercase;
-      padding: 2px 8px;
-      border-radius: 3px;
-    }
-
-    .seccion-precio-chip {
-      font-size: 10px;
-      color: rgba(255,255,255,0.4);
-      font-weight: bold;
-    }
-
-    /* ── LEYENDA ─────────────────────────────────────── */
-    .leyenda {
-      display: flex;
-      gap: 14px;
-      flex-wrap: wrap;
-      padding: 10px 0 4px;
-    }
-
-    .leyenda-item {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 11px;
-      color: rgba(255,255,255,0.5);
-      font-weight: bold;
-    }
-
-    .leyenda-cuadro {
-      width: 16px;
-      height: 14px;
-      border-radius: 3px;
-      border: 1px solid transparent;
-    }
-
-    /* ── SIDEBAR DERECHO ─────────────────────────────── */
-    .sidebar-titulo {
-      font-size: 11px;
-      font-weight: bold;
-      letter-spacing: 2px;
-      text-transform: uppercase;
-      color: #ff7a1a;
-      margin-bottom: 4px;
-    }
-
-    /* Estadísticas */
-    .stats-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 8px;
-    }
-
-    .stat-caja {
-      background: #0c141a;
-      border-radius: 8px;
-      padding: 10px 8px;
-      text-align: center;
-      border: 1px solid rgba(255,255,255,0.06);
-    }
-
-    .stat-num {
-      font-size: 20px;
-      font-weight: bold;
-      line-height: 1;
-    }
-
-    .stat-num.verde   { color: #2dbd6e; }
-    .stat-num.rojo    { color: #e03030; }
-    .stat-num.naranja { color: #ff7a1a; }
-    .stat-num.gris    { color: rgba(255,255,255,0.4); }
-
-    .stat-etiqueta {
-      font-size: 8px;
-      font-weight: bold;
-      letter-spacing: 1px;
-      text-transform: uppercase;
-      color: rgba(255,255,255,0.35);
-      margin-top: 3px;
-    }
-
-    /* Secciones list */
-    .sec-item {
-      background: #0c141a;
-      border-radius: 8px;
-      padding: 9px 10px;
-      border: 1px solid rgba(255,255,255,0.06);
-      margin-bottom: 6px;
-      cursor: pointer;
-      transition: border-color .2s;
-    }
-
-    .sec-item:hover { border-color: #ff7a1a; }
-    .sec-item.activa { border-color: #ff7a1a; background: rgba(255,122,26,0.08); }
-
-    .sec-item-nombre {
-      font-size: 12px;
-      font-weight: bold;
-      margin-bottom: 2px;
-    }
-
-    .sec-item-meta {
-      font-size: 10px;
-      color: rgba(255,255,255,0.4);
-    }
-
-    .sec-item-precio {
-      font-size: 13px;
-      font-weight: bold;
-      color: #ff7a1a;
-      margin-top: 4px;
-    }
-
-    /* Asiento seleccionado info */
-    .sel-caja {
-      background: #0c141a;
-      border: 1px solid #ff7a1a;
-      border-radius: 8px;
-      padding: 12px;
-    }
-
-    .sel-campo { margin-bottom: 8px; }
-
-    .sel-campo-label {
-      font-size: 9px;
-      font-weight: bold;
-      letter-spacing: 1.5px;
-      text-transform: uppercase;
-      color: rgba(255,255,255,0.35);
-      margin-bottom: 2px;
-    }
-
-    .sel-campo-valor {
-      font-size: 16px;
-      font-weight: bold;
-      color: #ff7a1a;
-    }
-
-    .sel-campo-valor.blanco { color: #fff; font-size: 13px; }
-
-    .no-sel {
-      text-align: center;
-      padding: 12px 0;
-      font-size: 11px;
-      color: rgba(255,255,255,0.3);
-      font-weight: bold;
-      letter-spacing: 1px;
-    }
-
-    /* Botón comprar */
-    .btn-comprar-asiento {
-      width: 100%;
-      padding: 12px;
-      background: #ed6a11;
-      color: #fff;
-      border: none;
-      border-radius: 8px;
-      font-size: 13px;
-      font-weight: bold;
-      cursor: pointer;
-      letter-spacing: 1px;
-      transition: background .2s;
-      margin-top: auto;
-    }
-
-    .btn-comprar-asiento:hover:not(:disabled) { background: #ff7a1a; }
-
-    .btn-comprar-asiento:disabled {
-      background: #3a2800;
-      color: #7a5000;
-      cursor: not-allowed;
-    }
-
-    /* ── ESTADOS DE CARGA ─────────────────────────────── */
-    .estado-carga {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 14px;
-      padding: 48px 24px;
-      color: rgba(255,255,255,0.35);
-      font-size: 13px;
-      font-weight: bold;
-      letter-spacing: 1px;
-      text-align: center;
-    }
-
-    .spinner {
-      width: 36px;
-      height: 36px;
-      border: 3px solid rgba(255,255,255,0.08);
-      border-top-color: #ff7a1a;
-      border-radius: 50%;
-      animation: giro .7s linear infinite;
-    }
-
-    @keyframes giro { to { transform: rotate(360deg); } }
-
-    .estado-error {
-      background: rgba(58,18,18,0.6);
-      border: 1px solid #c02020;
-      border-radius: 8px;
-      padding: 14px 16px;
-      color: #ff8080;
-      font-size: 13px;
-      margin: 16px;
-    }
-
-    /* Tooltip */
-    .tooltip-asiento {
-      position: fixed;
-      background: #0c141a;
-      border: 1px solid #ff7a1a;
-      color: #fff;
-      font-size: 11px;
-      font-weight: bold;
-      padding: 5px 10px;
-      border-radius: 5px;
-      pointer-events: none;
-      z-index: 999;
-      white-space: nowrap;
-      display: none;
-      transform: translate(-50%, calc(-100% - 8px));
-    }
-
-    /* Zoom controles */
-    .zoom-bar {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .zoom-btn {
-      background: #1a2530;
-      border: 1px solid rgba(255,255,255,0.1);
-      border-radius: 5px;
-      color: #fff;
-      width: 26px;
-      height: 26px;
-      font-size: 14px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: background .2s;
-    }
-
-    .zoom-btn:hover { background: #ff7a1a; color: #000; }
-
-    .zoom-pct {
-      font-size: 11px;
-      color: rgba(255,255,255,0.4);
-      min-width: 34px;
-      text-align: center;
-    }
-  </style>
-</head>
-<body>
-
-  <!-- HEADER: sin tocar -->
-  <header>
-    <h1>SOPEMASTER 👆</h1>
-    <a href="index.html" class="btn-inicio">Inicio</a>
-  </header>
-
-  <!-- TOOLTIP global -->
-  <div class="tooltip-asiento" id="tooltip"></div>
-
-  <!-- CONTAINER: sin tocar -->
-  <main class="container">
-
-    <!-- MENÚ: sin tocar -->
-    <aside class="menu">
-      <a href="comprar_boleto.html" class="btnactivo">Comprar boleto</a>
-      <a href="solicitar_reembolso.html" class="btn">Solicitar reembolso</a>
-      <a href="ver_mi_boleto.html" class="btn">Ver mi boleto</a>
-      <a href="ver_eventos.html" class="btn">Ver eventos</a>
-    </aside>
-
-    <!-- CONTENIDO: estructura idéntica, el JS inyecta adentro -->
-    <section class="contenido" id="contenido">
-
-      <div class="mapa-wrap">
-
-        <!-- Cabecera: selector de evento -->
-        <div class="mapa-header">
-          <h2 class="mapa-titulo">Mapa de Asientos</h2>
-          <div class="evento-selector">
-            <label>Evento:</label>
-            <select class="select-evento" id="select-evento">
-              <option value="">— Cargando... —</option>
-            </select>
-            <button class="btn-cargar" id="btn-cargar" disabled onclick="cargarMapa()">
-              Ver asientos
-            </button>
-            <div class="zoom-bar" id="zoom-bar" style="display:none;">
-              <button class="zoom-btn" onclick="cambiarZoom(-0.1)">−</button>
-              <span class="zoom-pct" id="zoom-pct">100%</span>
-              <button class="zoom-btn" onclick="cambiarZoom(0.1)">+</button>
-            </div>
-          </div>
-        </div>
-
-        <!-- Cuerpo: mapa + sidebar -->
-        <div class="mapa-body">
-
-          <!-- Zona del mapa -->
-          <div class="mapa-zona" id="mapa-zona">
-            <div class="estado-carga">
-              <span style="font-size:28px;opacity:.3;">🪑</span>
-              Selecciona un evento para ver el mapa
-            </div>
-          </div>
-
-          <!-- Sidebar -->
-          <div class="mapa-sidebar" id="mapa-sidebar">
-            <div>
-              <div class="sidebar-titulo">Disponibilidad</div>
-              <div class="stats-grid" id="stats-grid">
-                <div class="stat-caja">
-                  <div class="stat-num gris">—</div>
-                  <div class="stat-etiqueta">Libres</div>
-                </div>
-                <div class="stat-caja">
-                  <div class="stat-num gris">—</div>
-                  <div class="stat-etiqueta">Vendidos</div>
-                </div>
-              </div>
-            </div>
-
-            <div>
-              <div class="sidebar-titulo">Secciones</div>
-              <div id="secciones-list">
-                <div style="font-size:11px;color:rgba(255,255,255,.25);font-weight:bold;">
-                  Sin datos
-                </div>
-              </div>
-            </div>
-
-            <div style="flex:1;display:flex;flex-direction:column;gap:10px;">
-              <div class="sidebar-titulo">Asiento elegido</div>
-              <div id="info-seleccionado">
-                <div class="no-sel">Haz clic en un asiento libre</div>
-              </div>
-              <button class="btn-comprar-asiento" id="btn-comprar" disabled
-                      onclick="irAComprar()">
-                Selecciona un asiento
-              </button>
-            </div>
-          </div>
-
-        </div><!-- /mapa-body -->
-      </div><!-- /mapa-wrap -->
-
-    </section>
-  </main>
-
-  <script src="js/api.js"></script>
-  <script>
-  // ─────────────────────────────────────────────────────────────
-  //  Lógica del mapa de asientos
-  //  Usa la misma API del backend (api.js)
-  // ─────────────────────────────────────────────────────────────
-
-  // Paleta de colores por sección (hasta 6, luego cicla)
-  const PALETA = [
-    { bg: 'rgba(255,122,26,.18)',  border: '#ff7a1a', text: '#ff7a1a'  },
-    { bg: 'rgba(45,189,110,.15)',  border: '#2dbd6e', text: '#2dbd6e'  },
-    { bg: 'rgba(96,176,255,.15)',  border: '#60b0ff', text: '#60b0ff'  },
-    { bg: 'rgba(176,80,255,.15)',  border: '#b050ff', text: '#b050ff'  },
-    { bg: 'rgba(255,80,120,.15)',  border: '#ff5078', text: '#ff5078'  },
-    { bg: 'rgba(255,200,50,.15)',  border: '#ffc832', text: '#ffc832'  },
-  ];
-
-  let evento    = null;   // datos del evento activo
-  let secciones = [];
-  let asientos  = [];     // [{Asiento, Vendido}]
-  let selNum    = null;   // número de asiento seleccionado
-  let zoom      = 1;
-
-  // ── Al cargar: llenar el select con los eventos ───────────────
-  document.addEventListener('DOMContentLoaded', async () => {
-    try {
-      const data = await apiFetch('/eventos');
-      const sel  = document.getElementById('select-evento');
-      sel.innerHTML = '<option value="">— Elige un evento —</option>';
-      (data.data || []).forEach(ev => {
-        const opt = document.createElement('option');
-        opt.value       = ev.ID_Evento;
-        opt.textContent = `${ev.Nombre_Evento}  ·  ${ev.Nombre_Artista}`;
-        sel.appendChild(opt);
-      });
-
-      sel.addEventListener('change', () => {
-        document.getElementById('btn-cargar').disabled = !sel.value;
-      });
-
-      // Si viene ?evento=X en la URL, precargarlo
-      const id = new URLSearchParams(location.search).get('evento');
-      if (id) {
-        sel.value = id;
-        document.getElementById('btn-cargar').disabled = false;
-        cargarMapa();
-      }
-    } catch (err) {
-      document.getElementById('mapa-zona').innerHTML =
-        `<div class="estado-error">No se pudieron cargar los eventos: ${err.message}</div>`;
-    }
-  });
-
-  // ── Cargar el mapa completo del evento 
-  async function cargarMapa() {
-    const idEvento = document.getElementById('select-evento').value;
-    if (!idEvento) return;
-
-        
-    document.getElementById('mapa-zona').innerHTML = `
-      <div class="estado-carga"><div class="spinner"></div>Cargando mapa...</div>`;
-    resetSeleccion();
-
-    try {
-      const [evRes, secRes, asRes] = await Promise.all([
-        apiFetch(`/eventos/${idEvento}`),
-        apiFetch(`/eventos/${idEvento}/secciones`),
-        apiFetch(`/eventos/${idEvento}/asientos`),
-      ]);
-
-      evento    = evRes.data;
-      secciones = secRes.data || [];
-      asientos  = asRes.data  || [];
-
-      renderMapa();
-      renderStats();
-      renderSecciones();
-      document.getElementById('zoom-bar').style.display = 'flex';
-
-    } catch (err) {
-      document.getElementById('mapa-zona').innerHTML =
-        `<div class="estado-error">Error al cargar el mapa: ${err.message}</div>`;
-    }
-  }
-
-  // ── Render del mapa 
-  function renderMapa() {
-    const axf       = evento.Asientos_x_Fila;
-    const numFilas  = evento.Num_Filas;
-    const vendidos  = new Set(asientos.filter(a => a.Vendido).map(a => a.Asiento));
-
-    let html = `<div class="escenario">▐ ESCENARIO ▌</div>
-                <div class="filas-contenedor" id="filas-cont" style="transform-origin:top left;">`;
-
-    let prevSecId = null;
-
-    for (let fi = 0; fi < numFilas; fi++) {
-      const sec    = seccionDeFila(fi + 1);   
-      const scIdx  = secciones.indexOf(sec);
-      const color  = PALETA[scIdx % PALETA.length];
-
-
-      if (sec && sec.ID_Seccion !== prevSecId) {
-        html += `<div class="seccion-sep"></div>
-                 <div class="seccion-nombre-fila">
-                   <span class="seccion-chip"
-                     style="background:${color.bg};border:1px solid ${color.border};color:${color.text}">
-                     ${sec.Nombre_Seccion}
-                   </span>
-                   <span class="seccion-precio-chip">
-                     $${Number(sec.Precio).toLocaleString('es-MX')} MXN
-                   </span>
-                 </div>`;
-        prevSecId = sec.ID_Seccion;
-      }
-
-      const letraFila = idxALetra(fi);
-      html += `<div class="fila-row">
-                 <span class="fila-etiqueta">${letraFila}</span>
-                 <div class="asientos-fila">`;
-
-      for (let ci = 1; ci <= axf; ci++) {
-        const numAsiento = fi * axf + ci;
-        const label      = `${letraFila}${ci}`;
-        const isVendido  = vendidos.has(numAsiento);
-        const clase      = isVendido ? 'vendido' : 'libre';
-        const precio     = sec ? sec.Precio : 0;
-        const secNombre  = sec ? sec.Nombre_Seccion : '—';
-        const bordeColor = !isVendido && color ? `border-color:${color.border};` : '';
-
-        html += `<div
-          class="asiento ${clase}"
-          data-num="${numAsiento}"
-          data-label="${label}"
-          data-fila="${fi + 1}"
-          data-vendido="${isVendido ? 1 : 0}"
-          data-precio="${precio}"
-          data-seccion="${secNombre}"
-          style="${bordeColor}"
-          onmouseenter="mostrarTooltip(event,this)"
-          onmouseleave="ocultarTooltip()"
-          onclick="seleccionar(this)"
-        >${label}</div>`;
-      }
-
-      html += `</div></div>`;
-    }
-
-    html += `</div>`;
-
-    
-    html += `<div class="leyenda">
-      <div class="leyenda-item">
-        <div class="leyenda-cuadro" style="background:#1a3828;border-color:#2dbd6e;"></div>
-        Disponible
-      </div>
-      <div class="leyenda-item">
-        <div class="leyenda-cuadro" style="background:#3a1212;border-color:#c02020;"></div>
-        Vendido
-      </div>
-      <div class="leyenda-item">
-        <div class="leyenda-cuadro" style="background:#3a2300;border-color:#ff7a1a;"></div>
-        Seleccionado
-      </div>
-      ${secciones.map((s, i) => {
-        const c = PALETA[i % PALETA.length];
-        return `<div class="leyenda-item">
-          <div class="leyenda-cuadro" style="background:${c.bg};border-color:${c.border};"></div>
-          ${s.Nombre_Seccion}
-        </div>`;
-      }).join('')}
-    </div>`;
-
-    document.getElementById('mapa-zona').innerHTML = html;
-  }
-
-  // ── Estadísticas
-  function renderStats() {
-    const total    = evento.Num_Filas * evento.Asientos_x_Fila;
-    const vendidos = asientos.filter(a => a.Vendido).length;
-    const libres   = total - vendidos;
-    const pct      = Math.round((vendidos / total) * 100);
-
-    document.getElementById('stats-grid').innerHTML = `
-      <div class="stat-caja">
-        <div class="stat-num verde">${libres}</div>
-        <div class="stat-etiqueta">Libres</div>
-      </div>
-      <div class="stat-caja">
-        <div class="stat-num rojo">${vendidos}</div>
-        <div class="stat-etiqueta">Vendidos</div>
-      </div>
-      <div class="stat-caja">
-        <div class="stat-num gris">${total}</div>
-        <div class="stat-etiqueta">Total</div>
-      </div>
-      <div class="stat-caja">
-        <div class="stat-num naranja">${pct}%</div>
-        <div class="stat-etiqueta">Ocupación</div>
-      </div>`;
-  }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="comprar_boleto.css">
+    <style>
+   
+        @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap');
+
+        .contenido {
+            font-family: 'DM Sans', sans-serif;
+            padding: 28px 32px;
+            background: #0d0d12;
+            min-height: 100%;
+            color: #e8e6f0;
+        }
+
+        /* Event header */
+        .event-header {
+            margin-bottom: 32px;
+        }
+
+        .event-tag {
+            display: inline-block;
+            font-size: 10px;
+            font-weight: 600;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+            color: #c084fc;
+            background: rgba(192, 132, 252, 0.1);
+            border: 1px solid rgba(192, 132, 252, 0.25);
+            padding: 4px 12px;
+            border-radius: 20px;
+            margin-bottom: 10px;
+        }
+
+        .event-title {
+            font-family: 'Syne', sans-serif;
+            font-size: 22px;
+            font-weight: 800;
+            color: #fff;
+            margin: 0 0 4px;
+        }
+
+        .event-meta {
+            font-size: 12.5px;
+            color: #7c7a8e;
+            display: flex;
+            gap: 18px;
+        }
+
+        .event-meta span::before {
+            margin-right: 5px;
+        }
 
   
-  function renderSecciones() {
-    const html = secciones.map((s, i) => {
-      const c    = PALETA[i % PALETA.length];
-      const disp = calcLibresSec(s);
-      return `
-        <div class="sec-item" id="si-${s.ID_Seccion}"
-             onclick="filtrarSeccion(${s.ID_Seccion})"
-             style="border-left:3px solid ${c.border};">
-          <div class="sec-item-nombre" style="color:${c.text}">${s.Nombre_Seccion}</div>
-          <div class="sec-item-meta">Filas ${s.Fila_Inicio}–${s.Fila_Fin} · ${disp} libres</div>
-          <div class="sec-item-precio">$${Number(s.Precio).toLocaleString('es-MX')} MXN</div>
-        </div>`;
-    }).join('');
-    document.getElementById('secciones-list').innerHTML = html || '<div style="font-size:11px;color:rgba(255,255,255,.25);">Sin secciones</div>';
-  }
+        .stage-wrapper {
+            perspective: 500px;
+            margin-bottom: 28px;
+        }
 
-  function calcLibresSec(sec) {
-    const axf = evento.Asientos_x_Fila;
-    let c = 0;
-    for (let fi = sec.Fila_Inicio - 1; fi < sec.Fila_Fin; fi++) {
-      for (let ci = 1; ci <= axf; ci++) {
-        const num = fi * axf + ci;
-        if (!asientos.find(a => a.Asiento === num && a.Vendido)) c++;
-      }
-    }
-    return c;
-  }
+        .stage {
+            background: linear-gradient(180deg, #7c3aed 0%, #4f1d96 100%);
+            border-radius: 4px 4px 60px 60px / 4px 4px 30px 30px;
+            text-align: center;
+            padding: 10px 0 14px;
+            font-family: 'Syne', sans-serif;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            color: rgba(255,255,255,0.7);
+            transform: rotateX(-6deg);
+            box-shadow: 0 8px 40px rgba(124, 58, 237, 0.5), 0 2px 0 rgba(255,255,255,0.08) inset;
+            max-width: 340px;
+            margin: 0 auto;
+        }
 
-  // ── Seleccionar asiento ───────────────────────────────────────
-  function seleccionar(el) {
-    if (el.dataset.vendido === '1') return;
+      
+        .legend {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin-bottom: 26px;
+            flex-wrap: wrap;
+        }
 
-    // Deseleccionar el anterior
-    if (selNum !== null) {
-      const prev = document.querySelector(`.asiento[data-num="${selNum}"]`);
-      if (prev) { prev.classList.remove('seleccionado'); prev.classList.add('libre'); }
-    }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            font-size: 11.5px;
+            color: #9997aa;
+        }
 
-    // Si es el mismo, deseleccionar
-    const num = parseInt(el.dataset.num);
-    if (selNum === num) {
-      selNum = null;
-      el.classList.remove('seleccionado');
-      el.classList.add('libre');
-      actualizarPanelSel();
-      return;
-    }
+        .legend-dot {
+            width: 14px;
+            height: 14px;
+            border-radius: 4px;
+        }
 
-    el.classList.remove('libre');
-    el.classList.add('seleccionado');
-    selNum = num;
-    actualizarPanelSel(el);
-  }
+        .legend-dot.available   { background: #22d3ee; box-shadow: 0 0 8px rgba(34,211,238,0.4); }
+        .legend-dot.occupied    { background: #3b3849; border: 1px solid #4a4760; }
+        .legend-dot.selected    { background: #a855f7; box-shadow: 0 0 8px rgba(168,85,247,0.5); }
+        .legend-dot.vip         { background: linear-gradient(135deg, #f59e0b, #fbbf24); }
 
-  function actualizarPanelSel(el) {
-    const btn = document.getElementById('btn-comprar');
 
-    if (!el || selNum === null) {
-      document.getElementById('info-seleccionado').innerHTML =
-        '<div class="no-sel">Haz clic en un asiento libre</div>';
-      btn.disabled = true;
-      btn.textContent = 'Selecciona un asiento';
-      return;
-    }
+        .seat-map {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            align-items: center;
+            margin-bottom: 30px;
+        }
 
-    const label   = el.dataset.label;
-    const precio  = parseInt(el.dataset.precio);
-    const seccion = el.dataset.seccion;
+        .seat-row {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
 
-    document.getElementById('info-seleccionado').innerHTML = `
-      <div class="sel-caja">
-        <div class="sel-campo">
-          <div class="sel-campo-label">Asiento</div>
-          <div class="sel-campo-valor">${label}</div>
-        </div>
-        <div class="sel-campo">
-          <div class="sel-campo-label">Sección</div>
-          <div class="sel-campo-valor blanco">${seccion}</div>
-        </div>
-        <div class="sel-campo">
-          <div class="sel-campo-label">Precio</div>
-          <div class="sel-campo-valor">$${precio.toLocaleString('es-MX')} MXN</div>
-        </div>
-      </div>`;
+        .row-label {
+            width: 18px;
+            text-align: right;
+            font-size: 10px;
+            font-weight: 600;
+            color: #4a4760;
+            margin-right: 4px;
+            letter-spacing: 0.05em;
+        }
 
-    btn.disabled = false;
-    btn.textContent = `Comprar ${label} →`;
-  }
+        .seat {
+            width: 26px;
+            height: 24px;
+            border-radius: 5px 5px 3px 3px;
+            cursor: pointer;
+            border: none;
+            position: relative;
+            transition: transform 0.12s ease, box-shadow 0.12s ease;
+            outline: none;
+        }
 
-  function resetSeleccion() {
-    selNum = null;
-    actualizarPanelSel(null);
-  }
+        .seat::after {
+            content: '';
+            position: absolute;
+            bottom: -3px;
+            left: 3px;
+            right: 3px;
+            height: 3px;
+            border-radius: 0 0 3px 3px;
+            background: rgba(0,0,0,0.35);
+        }
 
-  // ── Filtrar sección ──────────────────────────────────────────
-  let filtroActivo = null;
+        .seat.available {
+            background: linear-gradient(180deg, #38bdf8 0%, #0ea5e9 100%);
+            box-shadow: 0 2px 8px rgba(14,165,233,0.3), 0 1px 0 rgba(255,255,255,0.2) inset;
+        }
 
-  function filtrarSeccion(idSec) {
-    if (filtroActivo === idSec) {
-      // Quitar filtro
-      filtroActivo = null;
-      document.querySelectorAll('.sec-item').forEach(e => e.classList.remove('activa'));
-      document.querySelectorAll('.asiento').forEach(e => { e.style.opacity = '1'; });
-    } else {
-      filtroActivo = idSec;
-      document.querySelectorAll('.sec-item').forEach(e => e.classList.remove('activa'));
-      document.getElementById(`si-${idSec}`)?.classList.add('activa');
+        .seat.available:hover {
+            transform: translateY(-3px) scale(1.08);
+            box-shadow: 0 6px 16px rgba(14,165,233,0.55);
+        }
 
-      const sec = secciones.find(s => s.ID_Seccion === idSec);
-      document.querySelectorAll('.asiento').forEach(e => {
-        const fila = parseInt(e.dataset.fila);
-        e.style.opacity = (fila >= sec.Fila_Inicio && fila <= sec.Fila_Fin) ? '1' : '0.12';
-      });
-    }
-  }
+        .seat.occupied {
+            background: linear-gradient(180deg, #3b3849 0%, #2e2c3a 100%);
+            cursor: not-allowed;
+            box-shadow: none;
+        }
 
-  // ── Ir a comprar ──────────────────────────────────────────────
-  function irAComprar() {
-    if (selNum === null) return;
-    const el     = document.querySelector(`.asiento[data-num="${selNum}"]`);
-    const idEv   = document.getElementById('select-evento').value;
+        .seat.vip {
+            background: linear-gradient(180deg, #fbbf24 0%, #d97706 100%);
+            box-shadow: 0 2px 8px rgba(251,191,36,0.35), 0 1px 0 rgba(255,255,255,0.25) inset;
+        }
 
-    if (!Auth.estaLogueado()) {
-      window.location.href = `login.html`;
-      return;
-    }
+        .seat.vip:hover {
+            transform: translateY(-3px) scale(1.08);
+            box-shadow: 0 6px 16px rgba(251,191,36,0.55);
+        }
 
-    // Guardar en sessionStorage para que comprar_boleto.js lo lea
-    sessionStorage.setItem('sope_compra', JSON.stringify({
-      ID_Evento:    idEv,
-      Asiento:      selNum,
-      AsientoLabel: el.dataset.label,
-      Precio:       el.dataset.precio,
-      Seccion:      el.dataset.seccion,
-    }));
-    window.location.href = 'comprar_boleto.html?autocompra=1';
-  }
+        .seat.selected {
+            background: linear-gradient(180deg, #c084fc 0%, #9333ea 100%) !important;
+            box-shadow: 0 4px 14px rgba(147,51,234,0.6), 0 1px 0 rgba(255,255,255,0.2) inset !important;
+            transform: translateY(-2px) scale(1.05);
+        }
 
-  // ── Tooltip ──────────────────────────────────────────────────
-  function mostrarTooltip(e, el) {
-    const t       = document.getElementById('tooltip');
-    const vendido = el.dataset.vendido === '1';
-    t.textContent = vendido
-      ? `${el.dataset.label} · VENDIDO`
-      : `${el.dataset.label} · ${el.dataset.seccion} · $${Number(el.dataset.precio).toLocaleString('es-MX')} MXN`;
-    t.style.display = 'block';
-  }
+        .seat.selected::before {
+            content: '✓';
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            color: #fff;
+            font-weight: 700;
+        }
 
-  function ocultarTooltip() {
-    document.getElementById('tooltip').style.display = 'none';
-  }
+        .aisle { width: 16px; }
 
-  document.addEventListener('mousemove', e => {
-    const t = document.getElementById('tooltip');
-    if (t.style.display !== 'none') {
-      t.style.left = e.clientX + 'px';
-      t.style.top  = e.clientY + 'px';
-    }
-  });
+        /* Tooltip */
+        .seat[data-tooltip]:hover::after {
+            display: none; /* override the ::after leg */
+        }
+        .seat[data-tooltip] {
+            position: relative;
+        }
 
-  // ── Zoom ──────────────────────────────────────────────────────
-  function cambiarZoom(delta) {
-    zoom = Math.min(1.8, Math.max(0.4, zoom + delta));
-    const cont = document.getElementById('filas-cont');
-    if (cont) cont.style.transform = `scale(${zoom})`;
-    document.getElementById('zoom-pct').textContent = Math.round(zoom * 100) + '%';
-  }
+        /* Summary card */
+        .summary-card {
+            background: linear-gradient(135deg, #1a1828 0%, #13111f 100%);
+            border: 1px solid rgba(168,85,247,0.2);
+            border-radius: 14px;
+            padding: 20px 22px;
+            box-shadow: 0 4px 30px rgba(0,0,0,0.4);
+        }
 
-  // ── Helpers ──────────────────────────────────────────────────
-  function seccionDeFila(fila1) {
-    return secciones.find(s => fila1 >= s.Fila_Inicio && fila1 <= s.Fila_Fin);
-  }
+        .summary-title {
+            font-family: 'Syne', sans-serif;
+            font-size: 13px;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: #7c7a8e;
+            margin: 0 0 14px;
+        }
 
-  function idxALetra(idx) {
-    let r = '';
-    let n = idx;
-    do {
-      r = String.fromCharCode(65 + (n % 26)) + r;
-      n = Math.floor(n / 26) - 1;
-    } while (n >= 0);
-    return r;
-  }
-  </script>
+        .selected-seats-list {
+            min-height: 36px;
+            margin-bottom: 16px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 7px;
+        }
+
+        .seat-tag {
+            background: rgba(168,85,247,0.15);
+            border: 1px solid rgba(168,85,247,0.35);
+            color: #c084fc;
+            font-size: 11.5px;
+            font-weight: 600;
+            padding: 4px 10px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            animation: popIn 0.18s cubic-bezier(.34,1.56,.64,1);
+        }
+
+        @keyframes popIn {
+            from { transform: scale(0.7); opacity: 0; }
+            to   { transform: scale(1);   opacity: 1; }
+        }
+
+        .seat-tag button {
+            background: none;
+            border: none;
+            color: #a855f7;
+            cursor: pointer;
+            font-size: 13px;
+            line-height: 1;
+            padding: 0;
+        }
+
+        .empty-state {
+            font-size: 12px;
+            color: #3f3d50;
+            font-style: italic;
+            align-self: center;
+        }
+
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 12.5px;
+            color: #7c7a8e;
+            margin-bottom: 8px;
+        }
+
+        .summary-row.total {
+            font-size: 15px;
+            font-weight: 600;
+            color: #e8e6f0;
+            border-top: 1px solid rgba(255,255,255,0.07);
+            padding-top: 10px;
+            margin-top: 4px;
+        }
+
+        .price-highlight {
+            color: #c084fc;
+            font-family: 'Syne', sans-serif;
+            font-weight: 700;
+        }
+
+        .btn-comprar {
+            display: block;
+            width: 100%;
+            margin-top: 16px;
+            padding: 13px;
+            background: linear-gradient(135deg, #9333ea, #7c3aed);
+            color: #fff;
+            font-family: 'Syne', sans-serif;
+            font-size: 14px;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: opacity 0.2s, transform 0.15s, box-shadow 0.2s;
+            box-shadow: 0 4px 20px rgba(124,58,237,0.5);
+        }
+
+        .btn-comprar:hover:not(:disabled) {
+            opacity: 0.9;
+            transform: translateY(-1px);
+            box-shadow: 0 7px 28px rgba(124,58,237,0.65);
+        }
+
+        .btn-comprar:disabled {
+            background: #2a2838;
+            color: #4a4760;
+            box-shadow: none;
+            cursor: not-allowed;
+        }
+
+        /* Price badge */
+        .price-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 10.5px;
+            font-weight: 600;
+            padding: 2px 8px;
+            border-radius: 10px;
+            margin-left: 6px;
+        }
+
+        .price-badge.normal { background: rgba(34,211,238,0.12); color: #22d3ee; }
+        .price-badge.vip    { background: rgba(251,191,36,0.12);  color: #fbbf24; }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <h1>SOPEMASTER 👆</h1>
+        <a href="index.html" class="btn-inicio">Inicio</a>
+    </header>
+
+    <main class="container">
+
+        <aside class="menu">
+            <a href="comprar_boleto.html" class="btnactivo">Comprar boleto</a>
+            <a href="solicitar_reembolso.html" class="btn">Solicitar reembolso</a>
+            <a href="ver_mi_boleto.html" class="btn">Ver mi boleto</a>
+            <a href="ver_eventos.html" class="btn">Ver eventos</a>
+        </aside>
+
+        <section class="contenido">
+
+            
+            <div class="event-header">
+                <div class="event-tag">José José</div>
+                <h2 class="event-title">El principe de la cancion y cantante estelar</h2>
+                <div class="event-meta">
+                    <span>📅 2026-03-14 </span>
+                    <span>🕗 20:30 hrs</span>
+                    <span>📍 Auditorio Nacional </span>
+                </div>
+            </div>
+
+        
+            <div class="stage-wrapper">
+                <div class="stage">🎤 &nbsp; E S C E N A R I O &nbsp; 🎤</div>
+            </div>
+
+
+            <div class="legend">
+                <div class="legend-item">
+                    <div class="legend-dot available"></div>
+                    Disponible
+                    <span class="price-badge normal">$350</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-dot vip"></div>
+                    VIP
+                    <span class="price-badge vip">$650</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-dot occupied"></div>
+                    Ocupado
+                </div>
+                <div class="legend-item">
+                    <div class="legend-dot selected"></div>
+                    Seleccionado
+                </div>
+            </div>
+
+            <div class="seat-map" id="seatMap"></div>
+
+            <div class="summary-card">
+                <p class="summary-title">Tu selección</p>
+                <div class="selected-seats-list" id="selectedList">
+                    <span class="empty-state">Ningún asiento seleccionado</span>
+                </div>
+                <div class="summary-row">
+                    <span>Asientos seleccionados</span>
+                    <span id="countLabel">0</span>
+                </div>
+                <div class="summary-row total">
+                    <span>Total</span>
+                    <span class="price-highlight" id="totalLabel">$0.00 MXN</span>
+                </div>
+                <button class="btn-comprar" id="btnComprar" disabled>
+                    Confirmar compra
+                </button>
+            </div>
+
+        </section>
+
+    </main>
+
+    <script>
+
+        const PRICE_NORMAL = 350;
+        const PRICE_VIP    = 650;
+        const ROWS = ['A','B','C','D','E','F','G','H'];
+        const SEATS_PER_ROW = 12;
+
+        const OCCUPIED = new Set([
+            'A3','A4','A9',
+            'B2','B5','B6','B10','B11',
+            'C1','C7','C8',
+            'D3','D4','D5','D9','D10',
+            'E6','E7',
+            'F2','F3','F11','F12',
+            'G5','G6','G7','G8',
+            'H1','H2','H10','H11','H12',
+        ]);
+
+        const VIP_ROWS = new Set(['A','B']);
+
+      
+        let selected = new Map(); 
+
+
+        const mapEl = document.getElementById('seatMap');
+
+        ROWS.forEach(row => {
+            const rowEl = document.createElement('div');
+            rowEl.className = 'seat-row';
+
+        
+            const label = document.createElement('span');
+            label.className = 'row-label';
+            label.textContent = row;
+            rowEl.appendChild(label);
+
+            for (let n = 1; n <= SEATS_PER_ROW; n++) {
+               
+                if (n === 7) {
+                    const aisle = document.createElement('div');
+                    aisle.className = 'aisle';
+                    rowEl.appendChild(aisle);
+                }
+
+                const id = `${row}${n}`;
+                const isOccupied = OCCUPIED.has(id);
+                const isVip      = VIP_ROWS.has(row);
+                const price      = isVip ? PRICE_VIP : PRICE_NORMAL;
+
+                const btn = document.createElement('button');
+                btn.className = `seat ${isOccupied ? 'occupied' : (isVip ? 'vip' : 'available')}`;
+                btn.dataset.id    = id;
+                btn.dataset.price = price;
+                btn.title         = isOccupied
+                    ? `Asiento ${id} — Ocupado`
+                    : `Asiento ${id} — $${price} MXN`;
+
+                if (!isOccupied) {
+                    btn.addEventListener('click', () => toggleSeat(id, row, n, price, btn));
+                }
+
+                rowEl.appendChild(btn);
+            }
+
+            mapEl.appendChild(rowEl);
+        });
+
+
+        function toggleSeat(id, row, num, price, btn) {
+            if (selected.has(id)) {
+                selected.delete(id);
+                btn.classList.remove('selected');
+                btn.classList.add(VIP_ROWS.has(row) ? 'vip' : 'available');
+            } else {
+                selected.set(id, { row, num, price });
+                btn.classList.remove('available','vip');
+                btn.classList.add('selected');
+            }
+            updateSummary();
+        }
+
+
+        function updateSummary() {
+            const listEl   = document.getElementById('selectedList');
+            const countEl  = document.getElementById('countLabel');
+            const totalEl  = document.getElementById('totalLabel');
+            const comprarEl= document.getElementById('btnComprar');
+
+            listEl.innerHTML = '';
+
+            if (selected.size === 0) {
+                listEl.innerHTML = '<span class="empty-state">Ningún asiento seleccionado</span>';
+                comprarEl.disabled = true;
+            } else {
+                selected.forEach(({ row, num, price }, id) => {
+                    const tag = document.createElement('div');
+                    tag.className = 'seat-tag';
+                    tag.innerHTML = `
+                        ${id}
+                        <button title="Quitar" onclick="removeSeat('${id}')">×</button>
+                    `;
+                    listEl.appendChild(tag);
+                });
+                comprarEl.disabled = false;
+            }
+
+            const total = [...selected.values()].reduce((s, v) => s + v.price, 0);
+            countEl.textContent = selected.size;
+            totalEl.textContent = `$${total.toLocaleString('es-MX', { minimumFractionDigits: 2 })} MXN`;
+        }
+
+
+        function removeSeat(id) {
+            const entry = selected.get(id);
+            if (!entry) return;
+            selected.delete(id);
+
+            const btn = document.querySelector(`.seat[data-id="${id}"]`);
+            if (btn) {
+                btn.classList.remove('selected');
+                btn.classList.add(VIP_ROWS.has(entry.row) ? 'vip' : 'available');
+            }
+            updateSummary();
+        }
+
+
+        document.getElementById('btnComprar').addEventListener('click', () => {
+            if (selected.size === 0) return;
+            const ids   = [...selected.keys()].join(', ');
+            const total = [...selected.values()].reduce((s,v) => s + v.price, 0);
+            alert(`✅ Compra confirmada\nAsientos: ${ids}\nTotal: $${total.toLocaleString('es-MX')} MXN`);
+
+            selected.forEach((_, id) => {
+                const btn = document.querySelector(`.seat[data-id="${id}"]`);
+                if (btn) {
+                    btn.classList.remove('selected');
+                    const row = id.charAt(0);
+                    btn.classList.add(VIP_ROWS.has(row) ? 'vip' : 'available');
+                }
+            });
+            selected.clear();
+            updateSummary();
+        });
+    </script>
+
 </body>
+
 </html>
+
