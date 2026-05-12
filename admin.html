@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel Admin | SOPEMASTER</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Montserrat:wght@400;600;700&display=swap"
+        rel="stylesheet">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --orange: #F5A623;
+            --black: #111111;
+            --white: #ffffff;
+            --gray: #e5e5e5;
+            --dark: #1a1a1a;
+        }
+
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background: var(--gray);
+            color: var(--black);
+        }
+
+        header {
+            background: var(--orange);
+            height: 90px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 40px;
+        }
+
+        .logo {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 2.4rem;
+            letter-spacing: 2px;
+        }
+
+        .logout {
+            background: var(--black);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            cursor: pointer;
+            font-weight: 700;
+        }
+
+        .hero {
+            background: var(--dark);
+            color: white;
+            padding: 60px;
+        }
+
+        .hero h1 {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 4rem;
+            letter-spacing: 3px;
+        }
+
+        .hero p {
+            margin-top: 10px;
+            opacity: .7;
+        }
+
+        .cards {
+
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+            padding: 40px;
+
+        }
+
+        .card {
+
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, .08);
+
+        }
+
+        .card h2 {
+
+            font-family: 'Bebas Neue', sans-serif;
+            letter-spacing: 2px;
+            margin-bottom: 20px;
+            font-size: 2rem;
+
+        }
+
+        .metric {
+
+            font-size: 3rem;
+            font-weight: 700;
+            color: var(--orange);
+
+        }
+
+        table {
+
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+
+        }
+
+        table th {
+
+            background: var(--orange);
+            padding: 14px;
+            text-align: left;
+
+        }
+
+        table td {
+
+            padding: 14px;
+            border-bottom: 1px solid #ddd;
+
+        }
+
+        .btn {
+
+            background: var(--orange);
+            border: none;
+            padding: 12px 18px;
+            font-weight: 700;
+            cursor: pointer;
+            margin-top: 12px;
+
+        }
+
+        .actions {
+
+            padding: 40px;
+
+        }
+
+        .actions h2 {
+
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 2.2rem;
+            margin-bottom: 20px;
+
+        }
+
+        .buttons {
+
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+
+        }
+
+        .buttons button {
+
+            background: var(--black);
+            color: white;
+            border: none;
+            padding: 16px 24px;
+            font-weight: 700;
+            cursor: pointer;
+
+        }
+
+        .modal {
+
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, .7);
+
+            display: none;
+
+            justify-content: center;
+            align-items: center;
+
+            z-index: 999;
+
+        }
+
+        .modal-content {
+
+            background: white;
+            width: 500px;
+
+            padding: 40px;
+
+            border-radius: 12px;
+
+            display: flex;
+            flex-direction: column;
+
+            gap: 20px;
+
+        }
+
+        .modal-content h2 {
+
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 2rem;
+
+        }
+
+        .modal-content input {
+
+            padding: 14px;
+            border: 1px solid #ccc;
+            font-size: 1rem;
+
+        }
+
+        .modal-buttons {
+
+            display: flex;
+            gap: 20px;
+
+        }
+
+        .modal-buttons button {
+
+            flex: 1;
+
+            background: #F5A623;
+            border: none;
+
+            padding: 14px;
+
+            font-weight: bold;
+            cursor: pointer;
+
+        }
+    </style>
+
+</head>
+
+<body>
+
+    <header>
+
+        <div class="logo">
+            SOPEMASTER 👆
+        </div>
+
+        <button class="logout" onclick="logout()">
+            CERRAR SESIÓN
+        </button>
+
+    </header>
+
+    <section class="hero">
+
+        <h1>
+            PANEL ADMINISTRADOR
+        </h1>
+
+        <p>
+            Control total de eventos, ventas y sistema
+        </p>
+
+    </section>
+
+    <section class="cards">
+
+        <div class="card">
+
+            <h2>
+                VENTAS TOTALES
+            </h2>
+
+            <div class="metric">
+                0
+            </div>
+
+        </div>
+
+        <div class="card">
+
+            <h2>
+                BOLETOS VENDIDOS
+            </h2>
+
+            <div class="metric" id="totalBoletos">
+                0
+            </div>
+
+        </div>
+
+        <div class="card">
+
+            <h2>
+                EVENTOS ACTIVOS
+            </h2>
+
+            <div class="metric" id="eventosActivos">
+                0
+            </div>
+
+        </div>
+
+        </div>
+
+    </section>
+
+    <section class="actions">
+
+        <h2>
+            CONSOLA DE CONTROL
+        </h2>
+
+        <div class="buttons">
+
+            <button onclick="abrirModalCrear()">
+                CREAR EVENTO
+            </button>
+
+            <button>
+                EDITAR EVENTO
+            </button>
+
+            <button>
+                BORRAR EVENTO
+            </button>
+
+        </div>
+
+    </section>
+
+    <!-- MODAL -->
+
+    <div class="modal" id="modalEvento">
+
+        <div class="modal-content">
+
+            <h2>
+                CREAR EVENTO
+            </h2>
+
+            <input type="text" id="nombreEvento" placeholder="Nombre Evento">
+
+            <input type="text" id="ubicacionEvento" placeholder="Ubicación">
+
+            <input type="date" id="fechaEvento">
+
+            <div class="modal-buttons">
+
+                <button onclick="crearEvento()">
+                    GUARDAR
+                </button>
+
+                <button onclick="cerrarModal()">
+                    CANCELAR
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <section style="padding:40px;">
+
+        <div class="card">
+
+            <h2>
+                EVENTOS REGISTRADOS
+            </h2>
+
+            <table>
+
+                <thead>
+
+                    <tr>
+
+                        <th>ID</th>
+                        <th>Evento</th>
+                        <th>Ubicación</th>
+                        <th>Fecha</th>
+                        <th>Estatus</th>
+                        <th>Tipo Reembolso</th>
+
+                    </tr>
+
+                </thead>
+
+                <tbody id="tablaEventos">
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </section>
+
+    <!-- MODAL CREAR EVENTO -->
+
+    <div id="modalCrear" class="modal">
+
+        <div class="modal-content">
+
+            <h2>Crear Evento</h2>
+
+            <input type="text" id="nombreEvento" placeholder="Nombre Evento">
+
+            <input type="text" id="ubicacionEvento" placeholder="Ubicación">
+
+            <input type="date" id="fechaEvento">
+
+            <select id="estatusEvento">
+
+                <option value="Activo">
+                    Activo
+                </option>
+
+                <option value="Cancelado">
+                    Cancelado
+                </option>
+
+                <option value="Finalizado">
+                    Finalizado
+                </option>
+
+            </select>
+
+            <div class="modal-buttons">
+
+                <button onclick="crearEvento()">
+                    Guardar
+                </button>
+
+                <button onclick="cerrarModalCrear()">
+                    Cancelar
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <div id="modalEditar" class="modal" style="display: none;">
+        <div class="modal-content">
+            <h2>Editar Evento</h2>
+            <input type="hidden" id="edit_idEvento">
+
+            <label>Nombre del Evento</label>
+            <input type="text" id="edit_nombreEvento">
+
+            <label>Ubicación (ID)</label>
+            <input type="number" id="edit_ubicacionEvento">
+
+            <label>Fecha Inicio</label>
+            <input type="datetime-local" id="edit_fechaEvento">
+
+            <label>Estatus (ID)</label>
+            <select id="edit_estatusEvento">
+                <option value="1">Anunciado</option>
+                <option value="2">Preventa</option>
+                <option value="3">Venta</option>
+                <option value="4">En curso</option>
+            </select>
+
+            <div class="modal-buttons">
+                <button onclick="cerrarModalEditar()" class="btn-cancelar">Cancelar</button>
+                <button onclick="actualizarEvento()" class="btn-guardar">Guardar Cambios</button>
+            </div>
+        </div>
+    </div>
+
+
+    <script src="backend/admin.js"></script>
+</body>
+
+</html>
