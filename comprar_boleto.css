@@ -70,13 +70,6 @@ header h1 {
     text-align: center;
 }
 
-.contenido {
-    flex: 1;
-    background: #0c141a;
-    border-radius: 20px;
-    height: 400px;
-}
-
 .btn {
     display: block;
     padding: 15px;
