@@ -68,6 +68,33 @@ async function cargarEventos() {
         console.error("Error cargando eventos:", error);
     }
 }
+async function cargarEventos() {
+  try {
+    const response = await fetch("http://localhost:3001/api/eventos");
+    const json = await response.json();
+    if (json.success && json.data.length > 0) {
+      const tbody = document.getElementById("tablaEventos");
+      tbody.innerHTML = json.data.map(e => `
+        <tr>
+          <td>${e.ID_Evento}</td>
+          <td>${e.Nombre_Evento}</td>
+          <td>${e.Ubicacion}</td>
+          <td>${new Date(e.Fecha_Evento_Ini).toLocaleString()}</td>
+          <td>${e.Estatus}</td>
+          <td>${e.Nombre_Tipo_Reembolso}</td>
+        </tr>
+      `).join("");
+    } else {
+      // Si no hay datos, muestra un mensaje
+      const tbody = document.getElementById("tablaEventos");
+      tbody.innerHTML = '<tr><td colspan="6">No hay eventos registrados</td></tr>';
+    }
+  } catch (error) {
+    console.error("Error cargando eventos:", error);
+    const tbody = document.getElementById("tablaEventos");
+    tbody.innerHTML = '<tr><td colspan="6">Error al cargar eventos</td></tr>';
+  }
+}
 
 // ========== CARGAR DASHBOARD ==========
 async function cargarDashboard() {
@@ -114,7 +141,7 @@ async function crearEvento() {
         });
         const json = await response.json();
         if (json.success) {
-            alert("xvento creado exitosamente");
+            alert("x    vento creado exitosamente");
             cerrarModalCrear();
             cargarEventos();
             cargarDashboard();

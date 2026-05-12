@@ -31,14 +31,19 @@ app.use("/api", router);
 
 // ========== 1. LISTAR EVENTOS (usan VIEW_VER_EVENTOS_TODOS) ==========
 router.get("/eventos", (req, res) => {
-  const sql = `SELECT 
-                ID_Evento,
-                Nombre_Evento,
-                Ubicacion,
-                Fecha_Evento_Ini,
-                Estatus,               ← aquí sí existe porque viene de la vista
-                Nombre_Tipo_Reembolso
-               FROM View_Ver_Eventos_Todos`;
+  // Usar la vista que ya tiene los JOINs y agregar boletos disponibles con la función
+  const sql = `
+    SELECT 
+      ID_Evento,
+      Nombre_Evento,
+      Ubicacion,
+      Fecha_Evento_Ini,
+      Estatus,
+      Nombre_Tipo_Reembolso,
+      Func_Num_Asientos_Disponibles(ID_Evento) AS Boletos_Disponibles
+    FROM View_Ver_Eventos_Todos
+    ORDER BY Fecha_Evento_Ini DESC
+  `;
   db.query(sql, (err, results) => {
     if (err) {
       console.error("Error en /eventos:", err);
@@ -134,20 +139,7 @@ router.post("/login", (req, res) => {
 });
 
 router.get("/eventos", (req, res) => {
-  const sql = `
-    SELECT 
-      e.ID_Evento,
-      e.Nombre_Evento,
-      u.Ubicacion,
-      e.Fecha_Evento_Ini,
-      es.Estatus AS Estatus,
-      tr.Nombre_Tipo_Reembolso
-    FROM Eventos e
-    JOIN Ubicaciones u ON e.ID_Ubicacion = u.ID_Ubicacion
-    JOIN Estatus es ON e.Estatus_evento = es.ID_Estatus
-    JOIN Tipos_Reembolso tr ON e.Tipo_Reembolso = tr.ID_Tipo_Reembolso
-    ORDER BY e.Fecha_Evento_Ini DESC
-  `;
+  const sql = "SELECT * FROM Eventos";  // Consulta directa
   db.query(sql, (err, results) => {
     if (err) return res.status(500).json({ success: false, message: err.message });
     res.json({ success: true, data: results });
