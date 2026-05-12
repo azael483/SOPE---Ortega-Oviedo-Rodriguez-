@@ -76,7 +76,6 @@ async function cargarEventos() {
       const tbody = document.getElementById("tablaEventos");
       tbody.innerHTML = json.data.map(e => `
         <tr>
-          <td>${e.ID_Evento}</td>
           <td>${e.Nombre_Evento}</td>
           <td>${e.Ubicacion}</td>
           <td>${new Date(e.Fecha_Evento_Ini).toLocaleString()}</td>
