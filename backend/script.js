@@ -1,6 +1,6 @@
-async function cargarEventos() {
+async function cargarEventos(){
 
-  try {
+  try{
 
     const response = await fetch(
       'http://localhost:3001/api/eventos'
@@ -8,39 +8,42 @@ async function cargarEventos() {
 
     const json = await response.json();
 
+    console.log(json);
+
     const eventos = json.data;
 
-    console.log(eventos);
+    if(!eventos || eventos.length === 0){
+      return;
+    }
 
     /* HERO */
 
-    if(eventos.length > 0){
+    const hero = eventos[0];
 
-      const hero = eventos[0];
+    document.querySelector('.hero-img').src =
+      `http://localhost:3001/api/eventos/imagen/${hero.ID_Evento}`;
 
-      document.querySelector('.hero-img').src =
-        hero.Imagen_Evento;
+    document.querySelector('.hero-subtitle').innerHTML =
+      hero.Nombre_Artista || '';
 
-      document.querySelector('.hero-subtitle').innerHTML =
-        hero.Nombre_Artista;
+    document.querySelector('.hero-title').innerHTML =
+      hero.Nombre_Evento || '';
 
-      document.querySelector('.hero-title').innerHTML =
-        hero.Nombre_Evento;
+    document.querySelector('.btn-tickets').href =
+      `comprar_boleto.html?id=${hero.ID_Evento}`;
 
-      document.querySelector('.btn-tickets').href =
-        `comprar_boleto.html?id=${hero.ID_Evento}`;
+    /* GRID */
 
-    }
-
-    /* GRID EVENTOS */
-
-    const grid = document.getElementById('events-grid');
+    const grid =
+      document.getElementById('events-grid');
 
     grid.innerHTML = eventos.map(e => `
 
       <div class="event-card">
 
-        <img src="${e.Imagen_Evento}" />
+        <img src="
+          http://localhost:3001/api/eventos/imagen/${e.ID_Evento}
+        " />
 
         <div class="card-overlay">
 
@@ -54,12 +57,13 @@ async function cargarEventos() {
 
           <p class="card-meta">
 
-            ${new Date(e.Fecha_Evento_Ini)
-              .toLocaleDateString('es-MX')}
+            ${new Date(
+              e.Fecha_Evento_Ini
+            ).toLocaleDateString('es-MX')}
 
             ·
 
-            ${e.Ubicacion}
+            ${e.Ubicacion || ''}
 
           </p>
 
@@ -90,7 +94,9 @@ async function cargarEventos() {
 
         <div class="featured-main">
 
-          <img src="${destacados[0].Imagen_Evento}" />
+          <img src="
+            http://localhost:3001/api/eventos/imagen/${destacados[0].ID_Evento}
+          " />
 
           <div class="card-overlay">
 
@@ -119,7 +125,9 @@ async function cargarEventos() {
 
             <div class="featured-side-item">
 
-              <img src="${e.Imagen_Evento}" />
+              <img src="
+                http://localhost:3001/api/eventos/imagen/${e.ID_Evento}
+              " />
 
               <div class="card-overlay">
 
@@ -147,13 +155,15 @@ async function cargarEventos() {
 
     }
 
-  } catch(error) {
+  } catch(error){
 
-    console.error(error);
+    console.log(error);
 
   }
 
 }
 
-cargarEventos();
-
+document.addEventListener(
+  'DOMContentLoaded',
+  cargarEventos
+);
