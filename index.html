@@ -1,12 +1,20 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Sopemaster 👆 Eventos y Boletos</title>
-  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Montserrat:wght@400;600;700&display=swap"
+    rel="stylesheet" />
   <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
 
     :root {
       --orange: #F5A623;
@@ -16,7 +24,9 @@
       --dark-section: #1a1a1a;
     }
 
-    html { scroll-behavior: smooth; }
+    html {
+      scroll-behavior: smooth;
+    }
 
     body {
       font-family: 'Montserrat', sans-serif;
@@ -35,7 +45,7 @@
       position: sticky;
       top: 0;
       z-index: 100;
-      box-shadow: 0 2px 12px rgba(0,0,0,0.18);
+      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.18);
     }
 
     .logo {
@@ -74,7 +84,9 @@
       white-space: nowrap;
     }
 
-    nav a:hover { text-decoration: underline; }
+    nav a:hover {
+      text-decoration: underline;
+    }
 
     .btn-signin {
       background: var(--black);
@@ -89,7 +101,10 @@
       text-decoration: none;
     }
 
-    .btn-signin:hover { background: #333; text-decoration: none !important; }
+    .btn-signin:hover {
+      background: #333;
+      text-decoration: none !important;
+    }
 
     /* ── SEARCH BAR ── */
     .search-bar {
@@ -99,7 +114,7 @@
       padding: 0 110px;
       height: 64px;
       gap: 0;
-      border-top: 2px solid rgba(0,0,0,0.1);
+      border-top: 2px solid rgba(0, 0, 0, 0.1);
     }
 
     .search-field {
@@ -107,13 +122,15 @@
       align-items: center;
       background: var(--orange);
       flex: 1;
-      border-right: 2px solid rgba(0,0,0,0.15);
+      border-right: 2px solid rgba(0, 0, 0, 0.15);
       height: 100%;
       gap: 12px;
       padding: 0 20px;
     }
 
-    .search-field:last-child { border-right: none; }
+    .search-field:last-child {
+      border-right: none;
+    }
 
     .search-field svg {
       font-size: 1.3rem;
@@ -134,7 +151,10 @@
       width: 100%;
     }
 
-    .search-field input::placeholder { color: var(--black); opacity: 0.85; }
+    .search-field input::placeholder {
+      color: var(--black);
+      opacity: 0.85;
+    }
 
     /* ── HERO ── */
     .hero {
@@ -157,7 +177,7 @@
     .hero-overlay {
       position: absolute;
       inset: 0;
-      background: linear-gradient(to right, rgba(0,0,0,0.55) 35%, transparent 70%);
+      background: linear-gradient(to right, rgba(0, 0, 0, 0.55) 35%, transparent 70%);
     }
 
     .hero-content {
@@ -191,7 +211,7 @@
       font-size: 5rem;
       line-height: 1;
       letter-spacing: 4px;
-      text-shadow: 2px 2px 12px rgba(0,0,0,0.6);
+      text-shadow: 2px 2px 12px rgba(0, 0, 0, 0.6);
     }
 
     .hero-title em {
@@ -277,12 +297,12 @@
       content: '';
       position: absolute;
       inset: 0;
-      background: rgba(0,0,0,0);
+      background: rgba(0, 0, 0, 0);
       transition: background 0.3s;
     }
 
     .event-card:hover::after {
-      background: rgba(0,0,0,0.18);
+      background: rgba(0, 0, 0, 0.18);
     }
 
     .event-card img {
@@ -302,7 +322,7 @@
       bottom: 0;
       left: 0;
       right: 0;
-      background: linear-gradient(to top, rgba(0,0,0,0.82) 0%, transparent 100%);
+      background: linear-gradient(to top, rgba(0, 0, 0, 0.82) 0%, transparent 100%);
       padding: 30px 22px 18px;
       color: var(--white);
       z-index: 2;
@@ -402,7 +422,9 @@
       transition: transform 0.5s ease;
     }
 
-    .featured-main:hover img { transform: scale(1.04); }
+    .featured-main:hover img {
+      transform: scale(1.04);
+    }
 
     .featured-side {
       display: flex;
@@ -427,7 +449,9 @@
       transition: transform 0.5s ease;
     }
 
-    .featured-side-item:hover img { transform: scale(1.05); }
+    .featured-side-item:hover img {
+      transform: scale(1.05);
+    }
 
     .featured-main .card-overlay,
     .featured-side-item .card-overlay {
@@ -435,7 +459,7 @@
       bottom: 0;
       left: 0;
       right: 0;
-      background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, transparent 100%);
+      background: linear-gradient(to top, rgba(0, 0, 0, 0.85) 0%, transparent 100%);
       padding: 30px 22px 18px;
       color: var(--white);
       z-index: 2;
@@ -462,7 +486,10 @@
     }
 
     .featured-main:hover .card-btn,
-    .featured-side-item:hover .card-btn { opacity: 1; transform: translateY(0); }
+    .featured-side-item:hover .card-btn {
+      opacity: 1;
+      transform: translateY(0);
+    }
 
     /* ── DIVIDER BAND ── */
     .band {
@@ -501,7 +528,7 @@
       display: grid;
       grid-template-columns: 1.5fr 1fr 1fr 1fr;
       gap: 48px;
-      border-bottom: 1px solid rgba(255,255,255,0.1);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
       padding-bottom: 48px;
       margin-bottom: 36px;
     }
@@ -516,7 +543,7 @@
     .footer-brand p {
       font-size: 0.75rem;
       line-height: 1.7;
-      color: rgba(255,255,255,0.55);
+      color: rgba(255, 255, 255, 0.55);
       max-width: 260px;
     }
 
@@ -539,18 +566,20 @@
       font-size: 0.72rem;
       font-weight: 600;
       letter-spacing: 1px;
-      color: rgba(255,255,255,0.55);
+      color: rgba(255, 255, 255, 0.55);
       text-decoration: none;
       text-transform: uppercase;
       transition: color 0.2s;
     }
 
-    .footer-col ul li a:hover { color: var(--orange); }
+    .footer-col ul li a:hover {
+      color: var(--orange);
+    }
 
     .footer-col .contact-item {
       font-size: 0.72rem;
       font-weight: 600;
-      color: rgba(255,255,255,0.55);
+      color: rgba(255, 255, 255, 0.55);
       margin-bottom: 10px;
       display: flex;
       align-items: center;
@@ -571,7 +600,7 @@
       font-size: 0.62rem;
       letter-spacing: 1.5px;
       text-transform: uppercase;
-      color: rgba(255,255,255,0.3);
+      color: rgba(255, 255, 255, 0.3);
     }
 
     .social-links {
@@ -582,11 +611,11 @@
     .social-links a {
       width: 34px;
       height: 34px;
-      border: 1px solid rgba(255,255,255,0.2);
+      border: 1px solid rgba(255, 255, 255, 0.2);
       display: flex;
       align-items: center;
       justify-content: center;
-      color: rgba(255,255,255,0.5);
+      color: rgba(255, 255, 255, 0.5);
       font-size: 0.75rem;
       text-decoration: none;
       transition: border-color 0.2s, color 0.2s, background 0.2s;
@@ -595,47 +624,151 @@
     .social-links a:hover {
       border-color: var(--orange);
       color: var(--orange);
-      background: rgba(245,166,35,0.08);
+      background: rgba(245, 166, 35, 0.08);
     }
 
     /* ── RESPONSIVE ── */
     @media (max-width: 1024px) {
-      .events-grid { grid-template-columns: repeat(2, 1fr); padding: 0 24px 40px; }
-      .featured-grid { grid-template-columns: 1fr; }
-      .featured-main img { height: 320px; }
-      .footer-top { grid-template-columns: 1fr 1fr; }
+      .events-grid {
+        grid-template-columns: repeat(2, 1fr);
+        padding: 0 24px 40px;
+      }
+
+      .featured-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .featured-main img {
+        height: 320px;
+      }
+
+      .footer-top {
+        grid-template-columns: 1fr 1fr;
+      }
     }
 
     @media (max-width: 900px) {
-      .search-bar { padding: 0 20px; }
-      nav { gap: 20px; }
-      .hero-title { font-size: 3.5rem; }
-      .btn-tickets { right: 3%; padding: 12px 20px; font-size: 0.75rem; }
-      .section-label { padding: 40px 24px 18px; }
-      .dark-section { padding: 40px 24px; }
-      .band { padding: 14px 24px; }
-      footer { padding: 48px 24px 32px; }
+      .search-bar {
+        padding: 0 20px;
+      }
+
+      nav {
+        gap: 20px;
+      }
+
+      .hero-title {
+        font-size: 3.5rem;
+      }
+
+      .btn-tickets {
+        right: 3%;
+        padding: 12px 20px;
+        font-size: 0.75rem;
+      }
+
+      .section-label {
+        padding: 40px 24px 18px;
+      }
+
+      .dark-section {
+        padding: 40px 24px;
+      }
+
+      .band {
+        padding: 14px 24px;
+      }
+
+      footer {
+        padding: 48px 24px 32px;
+      }
     }
 
     @media (max-width: 640px) {
-      header { padding: 0 16px; height: 70px; }
-      .logo-text { font-size: 1.9rem; }
-      nav { gap: 12px; }
-      nav a { font-size: 0.6rem; }
-      .search-bar { height: auto; flex-direction: column; padding: 12px 16px; gap: 8px; }
-      .search-field { border-right: none; border-bottom: 1px solid rgba(0,0,0,0.15); width: 100%; height: 44px; }
-      .search-field:last-child { border-bottom: none; }
-      .hero { height: 420px; }
-      .hero-title { font-size: 2.8rem; }
-      .btn-tickets { position: relative; top: auto; right: auto; transform: none; margin: 20px auto 0; display: block; text-align: center; width: fit-content; }
-      .hero-content { position: relative; top: auto; left: auto; transform: none; padding: 30px 20px 0; }
-      .hero-overlay { background: rgba(0,0,0,0.5); }
-      .events-grid { grid-template-columns: 1fr; padding: 0 16px 32px; }
-      .footer-top { grid-template-columns: 1fr; gap: 28px; }
-      .footer-bottom { flex-direction: column; gap: 16px; text-align: center; }
+      header {
+        padding: 0 16px;
+        height: 70px;
+      }
+
+      .logo-text {
+        font-size: 1.9rem;
+      }
+
+      nav {
+        gap: 12px;
+      }
+
+      nav a {
+        font-size: 0.6rem;
+      }
+
+      .search-bar {
+        height: auto;
+        flex-direction: column;
+        padding: 12px 16px;
+        gap: 8px;
+      }
+
+      .search-field {
+        border-right: none;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.15);
+        width: 100%;
+        height: 44px;
+      }
+
+      .search-field:last-child {
+        border-bottom: none;
+      }
+
+      .hero {
+        height: 420px;
+      }
+
+      .hero-title {
+        font-size: 2.8rem;
+      }
+
+      .btn-tickets {
+        position: relative;
+        top: auto;
+        right: auto;
+        transform: none;
+        margin: 20px auto 0;
+        display: block;
+        text-align: center;
+        width: fit-content;
+      }
+
+      .hero-content {
+        position: relative;
+        top: auto;
+        left: auto;
+        transform: none;
+        padding: 30px 20px 0;
+      }
+
+      .hero-overlay {
+        background: rgba(0, 0, 0, 0.5);
+      }
+
+      .events-grid {
+        grid-template-columns: 1fr;
+        padding: 0 16px 32px;
+      }
+
+      .footer-top {
+        grid-template-columns: 1fr;
+        gap: 28px;
+      }
+
+      .footer-bottom {
+        flex-direction: column;
+        gap: 16px;
+        text-align: center;
+      }
     }
   </style>
 </head>
+
 <body>
 
   <header>
@@ -647,174 +780,124 @@
       <a href="#">Eventos Próximos ›</a>
       <a href="comprar_boleto.html">Mis eventos ›</a>
       <a href="#">Acerca de Nosotros ›</a>
-      <a href="login.html" class="btn-signin">log in Admin</a>
+      <a href="login.html" class="btn-signin">log in</a>
     </nav>
   </header>
 
-  
+
   <div class="search-bar">
     <div class="search-field">
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/>
-        <circle cx="12" cy="9" r="2.5"/>
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+        stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" />
+        <circle cx="12" cy="9" r="2.5" />
       </svg>
       <input type="text" placeholder="Ubicación" />
     </div>
     <div class="search-field">
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-        <rect x="3" y="4" width="18" height="18" rx="2"/>
-        <line x1="16" y1="2" x2="16" y2="6"/>
-        <line x1="8" y1="2" x2="8" y2="6"/>
-        <line x1="3" y1="10" x2="21" y2="10"/>
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+        stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="4" width="18" height="18" rx="2" />
+        <line x1="16" y1="2" x2="16" y2="6" />
+        <line x1="8" y1="2" x2="8" y2="6" />
+        <line x1="3" y1="10" x2="21" y2="10" />
       </svg>
       <input type="text" placeholder="Fecha" />
     </div>
     <div class="search-field">
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-        <circle cx="11" cy="11" r="7"/>
-        <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+        stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="7" />
+        <line x1="21" y1="21" x2="16.65" y2="16.65" />
       </svg>
       <input type="text" placeholder="Buscar Artista, Evento, Inmueble" />
     </div>
   </div>
 
- 
-  <section class="hero">
-    <div class="hero-placeholder" style="position:absolute;inset:0;">
-      <img class="hero-img" src="https://cdn.milenio.com/uploads/media/2019/09/28/jose-jose-murio-a-los-1.jpg" alt="José José" />
-    </div>
-    <div class="hero-overlay"></div>
-    <div class="hero-content">
-      <p class="hero-subtitle">José José</p>
-      <p class="hero-en">En</p>
-      <h1 class="hero-title">
-        <em>El Amar<br>y el<br>Querer</em>
-      </h1>
-    </div>
-    <a href="#" class="btn-tickets">Ver Boletos</a>
-  </section>
+  <div>
+    <section class="hero">
 
+      <img class="hero-img" src="" alt="Evento" />
 
-  <div class="section-label">
-    <h2>Eventos Proximos</h2>
-    <div class="line"></div>
-  </div>
+      <div class="hero-overlay"></div>
 
-  <div class="events-grid">
+      <div class="hero-content">
 
-    <!-- Card 1 -->
-    <div class="event-card">
-      <img src="https://www.cmtv.com.ar/imagenes_artistas/195.webp"/>
-      <div class="card-overlay">
-        <p class="card-category">Música · Concierto</p>
-        <h3 class="card-title">Luis Miguel</h3>
-        <p class="card-meta">15 Jun 2026 · Estadio Azteca, CDMX</p>
+        <p class="hero-subtitle"></p>
+
+        <h1 class="hero-title"></h1>
+
       </div>
-      <a href="#" class="card-btn">Ver Boletos</a>
-    </div>
 
-    <!-- Card 2 -->
-    <div class="event-card">
-      <img src="https://paral-lel62.cat/wp-content/uploads/2023/11/887409.jpeg" />
-      <div class="card-overlay">
-        <p class="card-category">Comedia · Stand-Up</p>
-        <h3 class="card-title">Franco Escamilla </h3>
-        <p class="card-meta">22 Jul 2026 · Guadalajara</p>
-      </div>
-      <a href="#" class="card-btn">Ver Boletos</a>
-    </div>
+      <a href="#" class="btn-tickets">
+        Ver Boletos
+      </a>
 
-    <!-- Card 3 -->
-    <div class="event-card">
-      <img src="https://sicomnoticias.mx/wp-content/uploads/2026/01/645c2cefb7cf204ff464684a_juanga1.png" />
-      <div class="card-overlay">
-        <p class="card-category">Música · Concierto</p>
-        <h3 class="card-title">Juan Gabriel </h3>
-        <p class="card-meta">19 Ago 2026 · Bellas Artes, CDMX</p>
-      </div>
-      <a href="#" class="card-btn">Ver Boletos</a>
-    </div>
-  </div>
+    </section>
 
- 
-  <div class="band">
-    <span class="band-item">Conciertos</span>
-    <span class="band-sep">✦</span>
-    <span class="band-item">Teatro</span>
-    <span class="band-sep">✦</span>
-    <span class="band-item">Arte y Cultura</span>
-    <span class="band-sep">✦</span>
-  </div>
 
-  <div class="dark-section">
     <div class="section-label">
-      <h2>EVENTOS DESTACADOS</h2>
+
+      <h2>Eventos Próximos</h2>
+
       <div class="line"></div>
+
     </div>
 
-    <div class="featured-grid">
-     
-      <div class="featured-main">
-        <img src="https://m.media-amazon.com/images/S/pv-target-images/f63fcdbab2619b514599d4ee7dab84e1e9c4299d51b4705b7a868fd56c633dae._SX1080_FMjpg_.jpg"/>
-        <div class="card-overlay">
-          <p class="card-category">José José</p>
-          <h3 class="card-title" style="font-size:2.2rem;">EL MÁS TRISTE</h3>
-          <p class="card-meta">5 Ago 2025 · Palacio de Bellas Artes</p>
-        </div>
-        <a href="#" class="card-btn">Ver Boletos</a>
-      </div>
+    <div class="events-grid" id="events-grid"></div>
 
-      <div class="featured-side">
-        <div class="featured-side-item">
-          <img src="https://hips.hearstapps.com/delish/assets/17/40/1506956944-1506773146-gettyimages-89724270-1506718401.jpg?crop=1.00xw:0.930xh;0,0" />
-          <div class="card-overlay">
-            <p class="card-category">Los Beatles</p>
-            <h3 class="card-title">If i only take your hand? </h3>
-            <p class="card-meta">12 Ago 2025 · Guadalajara</p>
-          </div>
-          <a href="#" class="card-btn">Ver Boletos</a>
-        </div>
 
-        <div class="featured-side-item">
-          <img src="https://www.eixfortpienc.com/media/fortpienc/image/eventos/3141_Foto.1742683440.jpg" />
-          <div class="card-overlay">
-            <p class="card-category">Obra de: </p>
-            <h3 class="card-title">El Lago de los Cisnes</h3>
-            <p class="card-meta">20 Ago 2025 · Cancún, Q.Roo</p>
-          </div>
-          <a href="#" class="card-btn">Ver Boletos</a>
-        </div>
-      </div>
+    <div class="band">
+      <span class="band-item">Conciertos</span>
+      <span class="band-sep">✦</span>
+      <span class="band-item">Teatro</span>
+      <span class="band-sep">✦</span>
+      <span class="band-item">Arte y Cultura</span>
+      <span class="band-sep">✦</span>
     </div>
+
+    <div class="dark-section">
+
+      <div class="section-label">
+
+        <h2>Eventos Destacados</h2>
+
+        <div class="line"></div>
+
+      </div>
+
+      <div class="featured-grid" id="featured-grid"></div>
+
+    </div>
+
+    <footer>
+      <div class="footer-top">
+
+        <div class="footer-brand">
+          <span class="logo-text" style="font-family:'Bebas Neue',sans-serif; letter-spacing:2px;">SOPEMASTER 👆</span>
+          <p>
+            Sopemaster es la plataforma líder de venta de boletos en todo México. Conectamos a artistas,
+            promotores y fans para crear experiencias inolvidables. Compra tus boletos de forma
+            segura, rápida y sin complicaciones.
+          </p>
+        </div>
+
+        <div class="footer-col">
+          <h4>Contacto</h4>
+          <div class="contact-item"><span>📍</span> Cancún, Quintana Roo, México</div>
+          <div class="contact-item"><span>📧</span> Boletoscoquetos@sopemaster.mx</div>
+          <div class="contact-item"><span>📞</span> +52 998 000 0000</div>
+          <div class="contact-item"><span>🕐</span> Lun – Vie, 9 am – 6 pm</div>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <p>2025 Sopemaster. Todos los derechos reservados.</p>
+      </div>
   </div>
-
- 
-  <footer>
-    <div class="footer-top">
-    
-      <div class="footer-brand">
-        <span class="logo-text" style="font-family:'Bebas Neue',sans-serif; letter-spacing:2px;">SOPEMASTER 👆</span>
-        <p>
-          Sopemaster es la plataforma líder de venta de boletos en todo México. Conectamos a artistas,
-          promotores y fans para crear experiencias inolvidables. Compra tus boletos de forma
-          segura, rápida y sin complicaciones.
-        </p>
-      </div>
-
-      <div class="footer-col">
-        <h4>Contacto</h4>
-        <div class="contact-item"><span>📍</span> Cancún, Quintana Roo, México</div>
-        <div class="contact-item"><span>📧</span> Boletoscoquetos@sopemaster.mx</div>
-        <div class="contact-item"><span>📞</span> +52 998 000 0000</div>
-        <div class="contact-item"><span>🕐</span> Lun – Vie, 9 am – 6 pm</div>
-      </div>
-    </div>
-
-    <div class="footer-bottom">
-      <p>2025 Sopemaster. Todos los derechos reservados.</p>
-      </div>
-    </div>
   </footer>
 
+  <script src="/backend/script.js"></script>
 </body>
+
 </html>
