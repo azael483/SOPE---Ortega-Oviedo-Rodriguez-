@@ -4,14 +4,10 @@ const cors = require("cors");
 require("dotenv").config();
 
 const app = express();
-
 app.use(cors());
 app.use(express.json());
-
-/* SERVIR HTML */
 app.use(express.static(__dirname + "/../"));
 
-/* MYSQL */
 const db = mysql.createPool({
   host: process.env.DB_HOST || "localhost",
   user: process.env.DB_USER || "admin",
@@ -21,362 +17,170 @@ const db = mysql.createPool({
   connectionLimit: 10
 });
 
-/* TEST MYSQL */
-
-db.getConnection((err, connection) => {
-
-  if (err) {
-    console.log(err.message);
-  } else {
+// Test conexión (opcional, para depurar)
+db.getConnection((err, conn) => {
+  if (err) console.error("Error conectando a MySQL:", err.message);
+  else {
     console.log("MySQL conectado");
-    connection.release();
+    conn.release();
   }
-
 });
-
-/* ROUTER */
 
 const router = express.Router();
-
 app.use("/api", router);
 
-/* EVENTOS */
-
+// ========== 1. LISTAR EVENTOS (usan VIEW_VER_EVENTOS_TODOS) ==========
 router.get("/eventos", (req, res) => {
-
-  const sql = `CALL Proc_Consultar_Eventos()`;
-
-  db.query(sql, (err, result) => {
-
+  const sql = `SELECT 
+                ID_Evento,
+                Nombre_Evento,
+                Ubicacion,
+                Fecha_Evento_Ini,
+                Estatus,               ← aquí sí existe porque viene de la vista
+                Nombre_Tipo_Reembolso
+               FROM View_Ver_Eventos_Todos`;
+  db.query(sql, (err, results) => {
     if (err) {
-
-      console.log(err);
-
-      return res.status(500).json({
-        success: false,
-        message: err.message
-      });
-
+      console.error("Error en /eventos:", err);
+      return res.status(500).json({ success: false, message: err.message });
     }
-
-    res.json({
-      success: true,
-      data: result[0]
-    });
-
+    res.json({ success: true, data: results });
   });
-
 });
 
-/* OBTENER IMAGEN DESDE MYSQL */
-
-router.get("/eventos/imagen/:id", (req, res) => {
-
-  const id = req.params.id;
-
-  const sql = `
-    SELECT Imagen
-    FROM Eventos
-    WHERE ID_Evento = ?
-  `;
-
-  db.query(sql, [id], (err, result) => {
-
-    if (err) {
-
-      console.log(err);
-
-      return res.sendStatus(500);
-
-    }
-
-    if (result.length === 0) {
-
-      return res.sendStatus(404);
-
-    }
-
-    const imagen = result[0].Imagen;
-
-    if (!imagen) {
-
-      return res.sendStatus(404);
-
-    }
-
-    /* tipo imagen */
-
-    res.setHeader("Content-Type", "image/jpeg");
-
-    res.send(imagen);
-
-  });
-
-});
-
-/* START */
-
-app.listen(3001, () => {
-
-  console.log("Servidor:");
-  console.log("http://localhost:3001");
-
-});
-
-/* LOGIN */
-
-router.post("/login", (req, res) => {
-
-  const { username, password } = req.body;
-
-  /* ADMINS */
-
-  if (
-    username === "admin_Jose" &&
-    password === "admin"
-  ) {
-
-    return res.json({
-
-      success: true,
-
-      usuario: {
-
-        nombre: "Jose",
-        rol: "admin"
-
-      }
-
-    });
-
-  }
-
-  if (
-    username === "admin_Pepe" &&
-    password === "admin"
-  ) {
-
-    return res.json({
-
-      success: true,
-
-      usuario: {
-
-        nombre: "Pepe",
-        rol: "admin"
-
-      }
-
-    });
-
-  }
-
-  /* EMPLEADOS */
-
-  if (
-    username === "empleado_Azael" &&
-    password === "contraseña"
-  ) {
-
-    return res.json({
-
-      success: true,
-
-      usuario: {
-
-        nombre: "Azael",
-        rol: "empleado"
-
-      }
-
-    });
-
-  }
-
-  if (
-    username === "empleado_Omar" &&
-    password === "contraseña"
-  ) {
-
-    return res.json({
-
-      success: true,
-
-      usuario: {
-
-        nombre: "Omar",
-        rol: "empleado"
-
-      }
-
-    });
-
-  }
-
-  if (
-    username === "empleado_Iñaky" &&
-    password === "contraseña"
-  ) {
-
-    return res.json({
-
-      success: true,
-
-      usuario: {
-
-        nombre: "Iñaky",
-        rol: "empleado"
-
-      }
-
-    });
-
-  }
-
-  /* CLIENTE */
-
-  if (
-    username === "cliente_1" &&
-    password === "1234"
-  ) {
-
-    return res.json({
-
-      success: true,
-
-      usuario: {
-
-        nombre: "Cliente",
-        rol: "cliente"
-
-      }
-
-    });
-
-  }
-
-  /* ERROR */
-
-  res.json({
-
-    success: false,
-    message: "Usuario o contraseña incorrectos"
-
-  });
-
-});
-
+// ========== 2. DASHBOARD (usa funciones y vistas) ==========
 router.get("/admin/dashboard", (req, res) => {
-
-    const sql = `
-
-        SELECT 
-        
-            COUNT(*) AS eventosActivos,
-
-            (
-                SELECT COUNT(*)
-                FROM Boletos_Vendidos
-            ) AS totalBoletos
-
-        FROM Eventos
-
-    `;
-
-    db.query(sql, (err, result) => {
-
-        if(err){
-
-            console.log(err);
-
-            return res.status(500).json({
-                success:false
-            });
-
+  // Eventos activos (usando tu vista View_Ver_Eventos_Actuales)
+  const sqlActivos = `SELECT COUNT(*) AS activos FROM View_Ver_Eventos_Actuales WHERE Origen = 'Activo'`;
+  // Boletos vendidos totales (activos + histórico)
+  const sqlVendidos = `
+    SELECT 
+      (SELECT IFNULL(SUM(Func_Num_Asientos_Vendidos(ID_Evento)), 0) FROM Eventos) +
+      (SELECT COUNT(*) FROM Boletos_Vendidos_Historico) AS total
+  `;
+  db.query(sqlActivos, (err, active) => {
+    if (err) {
+      console.error("Error en dashboard activos:", err);
+      return res.status(500).json({ success: false });
+    }
+    db.query(sqlVendidos, (err2, vend) => {
+      if (err2) {
+        console.error("Error en dashboard vendidos:", err2);
+        return res.status(500).json({ success: false });
+      }
+      res.json({
+        success: true,
+        data: {
+          eventosActivos: active[0]?.activos || 0,
+          totalBoletos: vend[0]?.total || 0
         }
-
-        res.json({
-
-            success:true,
-            data: result[0]
-
-        });
-
+      });
     });
-
+  });
 });
 
-/* CREAR EVENTO */
-
+// ========== 3. CREAR EVENTO (llamando a Proc_Añadir_Evento) ==========
 router.post("/admin/crear-evento", (req, res) => {
-
-    const {
-    nombre,
-    id_ubicacion,
-    fecha
+  const {
+    nombre, descripcion, fecha_ini, fecha_fin,
+    num_filas, asientos_x_fila, costo_produccion,
+    tipo_reembolso, estatus, id_artista, id_ubicacion,
+    imagen_base64
   } = req.body;
 
-  const sql = `
-    INSERT INTO Eventos (
-      Nombre_Evento,
-      ID_Ubicacion,
-      Fecha_Evento_Ini,
-      Estatus
-    )
-    VALUES (?, ?, ?, 'Activo')
-  `;
+  let imagenBuffer = null;
+  if (imagen_base64) {
+    imagenBuffer = Buffer.from(imagen_base64.split(",")[1], "base64");
+  }
 
-  db.query(
-    sql,
-    [nombre, id_ubicacion, fecha],
-    (err, result) => {
-
-      if (err) {
-        console.log(err);
-        return res.status(500).json({
-          success: false,
-          message: err.message
-        });
-      }
-
-      res.json({
-        success: true
-      });
-
+  const sql = `CALL Proc_Añadir_Evento(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+  db.query(sql, [
+    nombre,
+    descripcion,
+    fecha_ini,
+    fecha_fin,
+    parseInt(num_filas) || 10,
+    parseInt(asientos_x_fila) || 20,
+    parseInt(costo_produccion) || 0,
+    parseInt(tipo_reembolso) || 1,
+    parseInt(estatus) || 1,        // estatus del evento (ID_Estatus)
+    parseInt(id_artista) || 1,
+    parseInt(id_ubicacion),
+    imagenBuffer
+  ], (err, result) => {
+    if (err) {
+      console.error("Error al crear evento:", err);
+      return res.status(500).json({ success: false, message: err.message });
     }
-  );
-
+    res.json({ success: true, message: "Evento creado correctamente" });
+  });
 });
-router.put("/admin/editar-evento/:id", (req, res) => {
-    const id = req.params.id;
-    const {
-        nombre,
-        ubicacion, // ID_Ubicacion en tu DB
-        artista,   // ID_Artista en tu DB
-        fecha,
-        estatus    // ID_Estatus en tu DB
-    } = req.body;
 
-    // Llamamos al procedimiento Proc_Cambiar_Evento de tu archivo sope_creacion.sql
-    // El orden de parámetros es: _ID_Evento, _Nombre_Evento, _ID_Ubicacion, _ID_Artista, _Fecha_Evento_Ini, _Estatus_evento
-    const sql = `CALL Proc_Cambiar_Evento(?, ?, ?, ?, ?, ?)`;
-
-    db.query(
-        sql,
-        [id, nombre || null, ubicacion || null, artista || null, fecha || null, estatus || null],
-        (err, result) => {
-            if (err) {
-                console.log("Error al ejecutar Proc_Cambiar_Evento:", err);
-                return res.status(500).json({
-                    success: false,
-                    message: "Error en la base de datos"
-                });
-            }
-
-            res.json({
-                success: true,
-                message: "Evento actualizado correctamente"
-            });
-        }
-    );
+// ========== 4. LOGIN (sin cambios) ==========
+router.post("/login", (req, res) => {
+  const { username, password } = req.body;
+  const admins = { admin_Jose: "admin", admin_Pepe: "admin" };
+  const empleados = { empleado_Azael: "contraseña", empleado_Omar: "contraseña", empleado_Iñaky: "contraseña" };
+  if (admins[username] && admins[username] === password) {
+    return res.json({ success: true, usuario: { nombre: username.split("_")[1], rol: "admin" } });
+  }
+  if (empleados[username] && empleados[username] === password) {
+    return res.json({ success: true, usuario: { nombre: username.split("_")[1], rol: "empleado" } });
+  }
+  if (username === "cliente_1" && password === "1234") {
+    return res.json({ success: true, usuario: { nombre: "Cliente", rol: "cliente" } });
+  }
+  res.json({ success: false, message: "Credenciales inválidas" });
 });
+
+router.get("/eventos", (req, res) => {
+  const sql = `
+    SELECT 
+      e.ID_Evento,
+      e.Nombre_Evento,
+      u.Ubicacion,
+      e.Fecha_Evento_Ini,
+      es.Estatus AS Estatus,
+      tr.Nombre_Tipo_Reembolso
+    FROM Eventos e
+    JOIN Ubicaciones u ON e.ID_Ubicacion = u.ID_Ubicacion
+    JOIN Estatus es ON e.Estatus_evento = es.ID_Estatus
+    JOIN Tipos_Reembolso tr ON e.Tipo_Reembolso = tr.ID_Tipo_Reembolso
+    ORDER BY e.Fecha_Evento_Ini DESC
+  `;
+  db.query(sql, (err, results) => {
+    if (err) return res.status(500).json({ success: false, message: err.message });
+    res.json({ success: true, data: results });
+  });
+});
+
+// ========== OBTENER LISTAS PARA SELECTS ==========
+router.get("/admin/artistas", (req, res) => {
+  db.query("SELECT ID_Artista, Nombre_Artista FROM Artistas", (err, results) => {
+    if (err) return res.status(500).json({ success: false, error: err.message });
+    res.json({ success: true, data: results });
+  });
+});
+
+router.get("/admin/ubicaciones", (req, res) => {
+  db.query("SELECT ID_Ubicacion, Ubicacion FROM Ubicaciones", (err, results) => {
+    if (err) return res.status(500).json({ success: false, error: err.message });
+    res.json({ success: true, data: results });
+  });
+});
+
+router.get("/admin/tipos-reembolso", (req, res) => {
+  db.query("SELECT ID_Tipo_Reembolso, Nombre_Tipo_Reembolso FROM Tipos_Reembolso", (err, results) => {
+    if (err) return res.status(500).json({ success: false, error: err.message });
+    res.json({ success: true, data: results });
+  });
+});
+
+router.get("/admin/estatus-eventos", (req, res) => {
+  db.query("SELECT ID_Estatus, Estatus FROM Estatus WHERE ID_Estatus IN (1,2,3,4)", (err, results) => {
+    if (err) return res.status(500).json({ success: false, error: err.message });
+    res.json({ success: true, data: results });
+  });
+});
+
+app.listen(3001, () => console.log("Servidor corriendo en http://localhost:3001"));
