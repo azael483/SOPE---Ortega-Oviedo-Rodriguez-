@@ -185,6 +185,26 @@
             font-weight: bold;
             cursor: pointer;
         }
+
+        /* Resaltado de fila seleccionada */
+        tr.seleccionado {
+            background-color: #efc076 !important;
+            color: #111;
+            font-weight: bold;
+        }
+
+        /* Botones deshabilitados (grises) */
+        .buttons button:disabled {
+            background-color: #888;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        /* Botones habilitados (negro original) */
+        .buttons button:enabled {
+            background-color: var(--black);
+            cursor: pointer;
+        }
     </style>
 </head>
 
@@ -203,7 +223,7 @@
     <section class="cards">
         <div class="card">
             <h2>VENTAS TOTALES</h2>
-            <div class="metric">0</div>
+            <div class="metric" id="ventasTotales">0</div>
         </div>
         <div class="card">
             <h2>BOLETOS VENDIDOS</h2>
@@ -218,9 +238,11 @@
     <section class="actions">
         <h2>CONSOLA DE CONTROL</h2>
         <div class="buttons">
-            <button onclick="abrirModalCrear()">CREAR EVENTO</button>
-            <button onclick="alert('Función de edición en desarrollo')">EDITAR EVENTO</button>
-            <button onclick="alert('Función de borrado en desarrollo')">BORRAR EVENTO</button>
+            <div class="buttons">
+                <button onclick="abrirModalCrear()">CREAR EVENTO</button>
+                <button id="btnEditarEvento" disabled>EDITAR EVENTO</button>
+                <button id="btnEliminarEvento" onclick="eliminarEvento()" disabled>ELIMINAR EVENTO</button>
+            </div>
         </div>
     </section>
 
@@ -243,48 +265,96 @@
     </section>
 
     <div id="modalCrear" class="modal">
-    <div class="modal-content" style="width: 600px; max-height: 85vh; overflow-y: auto;">
-        <h2>Crear Evento</h2>
-        
-        <label>Nombre del Evento</label>
-        <input type="text" id="nombreEvento" placeholder="Ej: Gran Concierto" required>
-        
-        <label>Descripción</label>
-        <textarea id="descripcionEvento" rows="5" style="width:100%; resize:vertical; font-family:inherit; padding:12px; border:1px solid #ccc; border-radius:4px;" placeholder="Descripción detallada del evento..."></textarea>
-        
-        <label>Fecha y hora de inicio</label>
-        <input type="datetime-local" id="fechaIniEvento" required>
-        
-        <label>Fecha y hora de fin</label>
-        <input type="datetime-local" id="fechaFinEvento" required>
-        
-        <label>Número de filas</label>
-        <input type="number" id="numFilas" value="10" min="1" required>
-        
-        <label>Asientos por fila</label>
-        <input type="number" id="asientosPorFila" value="20" min="1" required>
-        
-        <label>Costo de producción</label>
-        <input type="number" id="costoProduccion" value="0" min="0" required>
-        
-        <label>Tipo de reembolso</label>
-        <select id="tipoReembolso" required></select>
-        
-        <label>Estatus del evento</label>
-        <select id="estatusEvento" required></select>
-        
-        <label>Artista</label>
-        <select id="idArtista" required></select>
-        
-        <label>Ubicación</label>
-        <select id="idUbicacion" required></select>
-        
-        <div class="modal-buttons">
-            <button onclick="crearEvento()">Guardar</button>
-            <button onclick="cerrarModalCrear()">Cancelar</button>
+        <div class="modal-content" style="width: 600px; max-height: 85vh; overflow-y: auto;">
+            <h2>Crear Evento</h2>
+
+            <label>Nombre del Evento</label>
+            <input type="text" id="nombreEvento" placeholder="Ej: Gran Concierto" required>
+
+            <label>Descripción</label>
+            <textarea id="descripcionEvento" rows="5"
+                style="width:100%; resize:vertical; font-family:inherit; padding:12px; border:1px solid #ccc; border-radius:4px;"
+                placeholder="Descripción detallada del evento..."></textarea>
+
+            <label>Fecha y hora de inicio</label>
+            <input type="datetime-local" id="fechaIniEvento" required>
+
+            <label>Fecha y hora de fin</label>
+            <input type="datetime-local" id="fechaFinEvento" required>
+
+            <label>Número de filas</label>
+            <input type="number" id="numFilas" value="10" min="1" required>
+
+            <label>Asientos por fila</label>
+            <input type="number" id="asientosPorFila" value="20" min="1" required>
+
+            <label>Costo de producción</label>
+            <input type="number" id="costoProduccion" value="0" min="0" required>
+
+            <label>Tipo de reembolso</label>
+            <select id="tipoReembolso" required></select>
+
+            <label>Estatus del evento</label>
+            <select id="estatusEvento" required></select>
+
+            <label>Artista</label>
+            <select id="idArtista" required></select>
+
+            <label>Ubicación</label>
+            <select id="idUbicacion" required></select>
+
+            <div class="modal-buttons">
+                <button onclick="crearEvento()">Guardar</button>
+                <button onclick="cerrarModalCrear()">Cancelar</button>
+            </div>
         </div>
     </div>
-</div>
+
+    <!-- MODAL EDITAR EVENTO -->
+    <div id="modalEditar" class="modal">
+        <div class="modal-content" style="width: 600px; max-height: 85vh; overflow-y: auto;">
+            <h2>Editar Evento</h2>
+            <input type="hidden" id="edit_idEvento">
+
+            <label>Nombre del Evento</label>
+            <input type="text" id="edit_nombreEvento" required>
+
+            <label>Descripción</label>
+            <textarea id="edit_descripcionEvento" rows="4" style="width:100%; resize:vertical;"></textarea>
+
+            <label>Fecha y hora de inicio</label>
+            <input type="datetime-local" id="edit_fechaIniEvento" required>
+
+            <label>Fecha y hora de fin</label>
+            <input type="datetime-local" id="edit_fechaFinEvento" required>
+
+            <label>Número de filas</label>
+            <input type="number" id="edit_numFilas" min="1" required>
+
+            <label>Asientos por fila</label>
+            <input type="number" id="edit_asientosPorFila" min="1" required>
+
+            <label>Costo de producción</label>
+            <input type="number" id="edit_costoProduccion" min="0" required>
+
+            <label>Tipo de reembolso</label>
+            <select id="edit_tipoReembolso" required></select>
+
+            <label>Estatus del evento</label>
+            <select id="edit_estatusEvento" required></select>
+
+            <label>Artista</label>
+            <select id="edit_idArtista" required></select>
+
+            <label>Ubicación</label>
+            <select id="edit_idUbicacion" required></select>
+
+            <div class="modal-buttons">
+                <button onclick="actualizarEvento()">Guardar Cambios</button>
+                <button onclick="cerrarModalEditar()">Cancelar</button>
+            </div>
+        </div>
+    </div>
 
     <script src="backend/admin.js"></script>
 </body>
