@@ -10,8 +10,8 @@ app.use(express.static(__dirname + "/../"));
 
 const db = mysql.createPool({
   host: process.env.DB_HOST || "localhost",
-  user: process.env.DB_USER || "admin",
-  password: process.env.DB_PASSWORD || "Azael483",
+  user: process.env.DB_USER || "root",
+  password: process.env.DB_PASSWORD || "952008",
   database: process.env.DB_NAME || "SOPE",
   waitForConnections: true,
   connectionLimit: 10
